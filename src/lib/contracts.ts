@@ -39,6 +39,12 @@ export interface Contract {
   statusVencimento: "vencido" | "criticos" | "atencao" | "saudavel";
   mrrSig: number; // soma das licenças /Mensal
   contratosSig: number; // qtd de módulos SIG contratados
+  sigBreakdown: {
+    modulo: string;
+    implantacao: number;
+    licenca: number;
+    mensal: number;
+  }[];
 }
 
 const BR_UF = new Set([
@@ -154,6 +160,13 @@ export function buildContract(row: string[]): Contract | null {
   const mrrSig = receitaPorLinha["SIG - Mensal (MRR)"];
   const contratosSig = SIG_LIC_IDX.filter((i) => num(row, i) > 0).length;
 
+  const sigBreakdown = SIG_MODULES.map((modulo, i) => ({
+    modulo,
+    implantacao: num(row, SIG_IMPL_IDX[i]),
+    licenca: num(row, SIG_LIC_IDX[i]),
+    mensal: num(row, SIG_MENSAL_IDX[i]),
+  }));
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diasParaVencer = vencimento
@@ -187,6 +200,7 @@ export function buildContract(row: string[]): Contract | null {
     statusVencimento,
     mrrSig,
     contratosSig,
+    sigBreakdown,
   };
 }
 
@@ -245,15 +259,22 @@ export const SIG_MODULES = [
   "Cidadão",
 ] as const;
 
-export function sigModuleValues(
+export function sigModuleAggregates(
   contracts: Contract[],
   kind: "implantacao" | "licenca" | "mensal",
 ): { modulo: string; valor: number; municipios: number }[] {
-  // Re-parse module breakdowns is not in Contract; expose helper via SIG arrays.
-  // We recompute here using SIG_MODULES order.
-  const idxBase =
-    kind === "implantacao" ? SIG_IMPL_IDX : kind === "licenca" ? SIG_LIC_IDX : SIG_MENSAL_IDX;
-  void idxBase;
-  // We don't keep raw rows; the page that needs the per-module breakdown will use rawRows.
-  return [];
+  return SIG_MODULES.map((modulo) => {
+    let valor = 0;
+    let municipios = 0;
+    for (const c of contracts) {
+      const row = c.sigBreakdown.find((r) => r.modulo === modulo);
+      if (!row) continue;
+      const v = row[kind];
+      if (v > 0) {
+        valor += v;
+        municipios += 1;
+      }
+    }
+    return { modulo, valor, municipios };
+  });
 }
