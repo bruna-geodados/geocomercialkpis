@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VigenciasRouteImport } from './routes/vigencias'
+import { Route as SigRouteImport } from './routes/sig'
 import { Route as ReceitaRouteImport } from './routes/receita'
 import { Route as MunicipiosRouteImport } from './routes/municipios'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const VigenciasRoute = VigenciasRouteImport.update({
   id: '/vigencias',
   path: '/vigencias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SigRoute = SigRouteImport.update({
+  id: '/sig',
+  path: '/sig',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReceitaRoute = ReceitaRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
+  '/sig': typeof SigRoute
   '/vigencias': typeof VigenciasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
+  '/sig': typeof SigRoute
   '/vigencias': typeof VigenciasRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
+  '/sig': typeof SigRoute
   '/vigencias': typeof VigenciasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/municipios' | '/receita' | '/vigencias'
+  fullPaths: '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/municipios' | '/receita' | '/vigencias'
-  id: '__root__' | '/' | '/municipios' | '/receita' | '/vigencias'
+  to: '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
+  id: '__root__' | '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MunicipiosRoute: typeof MunicipiosRoute
   ReceitaRoute: typeof ReceitaRoute
+  SigRoute: typeof SigRoute
   VigenciasRoute: typeof VigenciasRoute
 }
 
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/vigencias'
       fullPath: '/vigencias'
       preLoaderRoute: typeof VigenciasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sig': {
+      id: '/sig'
+      path: '/sig'
+      fullPath: '/sig'
+      preLoaderRoute: typeof SigRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/receita': {
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MunicipiosRoute: MunicipiosRoute,
   ReceitaRoute: ReceitaRoute,
+  SigRoute: SigRoute,
   VigenciasRoute: VigenciasRoute,
 }
 export const routeTree = rootRouteImport
