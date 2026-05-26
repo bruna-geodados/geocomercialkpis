@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VigenciasRouteImport } from './routes/vigencias'
 import { Route as ReceitaRouteImport } from './routes/receita'
+import { Route as MunicipiosRouteImport } from './routes/municipios'
 import { Route as IndexRouteImport } from './routes/index'
 
 const VigenciasRoute = VigenciasRouteImport.update({
@@ -23,6 +24,11 @@ const ReceitaRoute = ReceitaRouteImport.update({
   path: '/receita',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MunicipiosRoute = MunicipiosRouteImport.update({
+  id: '/municipios',
+  path: '/municipios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
   '/vigencias': typeof VigenciasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
   '/vigencias': typeof VigenciasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
   '/vigencias': typeof VigenciasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/receita' | '/vigencias'
+  fullPaths: '/' | '/municipios' | '/receita' | '/vigencias'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/receita' | '/vigencias'
-  id: '__root__' | '/' | '/receita' | '/vigencias'
+  to: '/' | '/municipios' | '/receita' | '/vigencias'
+  id: '__root__' | '/' | '/municipios' | '/receita' | '/vigencias'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MunicipiosRoute: typeof MunicipiosRoute
   ReceitaRoute: typeof ReceitaRoute
   VigenciasRoute: typeof VigenciasRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReceitaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/municipios': {
+      id: '/municipios'
+      path: '/municipios'
+      fullPath: '/municipios'
+      preLoaderRoute: typeof MunicipiosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MunicipiosRoute: MunicipiosRoute,
   ReceitaRoute: ReceitaRoute,
   VigenciasRoute: VigenciasRoute,
 }
