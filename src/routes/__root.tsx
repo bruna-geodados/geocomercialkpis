@@ -76,11 +76,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Dashboard Comercial — Análise de Contratos" },
       { name: "description", content: "Dashboard dinâmico para análise do setor comercial: contratos municipais, receita por linha de serviço, vigências e SIG." },
-      { property: "og:title", content: "Dashboard Comercial" },
-      { property: "og:description", content: "Análise dinâmica do setor comercial integrada com Google Sheets." },
+      { property: "og:title", content: "Dashboard Comercial — Análise de Contratos" },
+      { property: "og:description", content: "Dashboard dinâmico para análise do setor comercial: contratos municipais, receita por linha de serviço, vigências e SIG." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Dashboard Comercial — Análise de Contratos" },
+      { name: "twitter:description", content: "Dashboard dinâmico para análise do setor comercial: contratos municipais, receita por linha de serviço, vigências e SIG." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/92b0773b-d69b-407b-be77-0a48fe441caf/id-preview-c5907494--87b131b2-079e-4f82-951e-7474a455d3cd.lovable.app-1779813110296.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/92b0773b-d69b-407b-be77-0a48fe441caf/id-preview-c5907494--87b131b2-079e-4f82-951e-7474a455d3cd.lovable.app-1779813110296.png" },
     ],
     links: [
       {
