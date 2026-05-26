@@ -9,8 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VigenciasRouteImport } from './routes/vigencias'
+import { Route as SigRouteImport } from './routes/sig'
+import { Route as ReceitaRouteImport } from './routes/receita'
+import { Route as MunicipiosRouteImport } from './routes/municipios'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VigenciasRoute = VigenciasRouteImport.update({
+  id: '/vigencias',
+  path: '/vigencias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SigRoute = SigRouteImport.update({
+  id: '/sig',
+  path: '/sig',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReceitaRoute = ReceitaRouteImport.update({
+  id: '/receita',
+  path: '/receita',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MunicipiosRoute = MunicipiosRouteImport.update({
+  id: '/municipios',
+  path: '/municipios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +43,72 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/municipios': typeof MunicipiosRoute
+  '/receita': typeof ReceitaRoute
+  '/sig': typeof SigRoute
+  '/vigencias': typeof VigenciasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/municipios': typeof MunicipiosRoute
+  '/receita': typeof ReceitaRoute
+  '/sig': typeof SigRoute
+  '/vigencias': typeof VigenciasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/municipios': typeof MunicipiosRoute
+  '/receita': typeof ReceitaRoute
+  '/sig': typeof SigRoute
+  '/vigencias': typeof VigenciasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
+  id: '__root__' | '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MunicipiosRoute: typeof MunicipiosRoute
+  ReceitaRoute: typeof ReceitaRoute
+  SigRoute: typeof SigRoute
+  VigenciasRoute: typeof VigenciasRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vigencias': {
+      id: '/vigencias'
+      path: '/vigencias'
+      fullPath: '/vigencias'
+      preLoaderRoute: typeof VigenciasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sig': {
+      id: '/sig'
+      path: '/sig'
+      fullPath: '/sig'
+      preLoaderRoute: typeof SigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/receita': {
+      id: '/receita'
+      path: '/receita'
+      fullPath: '/receita'
+      preLoaderRoute: typeof ReceitaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/municipios': {
+      id: '/municipios'
+      path: '/municipios'
+      fullPath: '/municipios'
+      preLoaderRoute: typeof MunicipiosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,17 +121,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MunicipiosRoute: MunicipiosRoute,
+  ReceitaRoute: ReceitaRoute,
+  SigRoute: SigRoute,
+  VigenciasRoute: VigenciasRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
