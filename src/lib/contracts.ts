@@ -16,6 +16,7 @@ export type ServiceLine =
   | "Taxa de Lixo";
 
 export interface Contract {
+  gestao: "nova" | "anterior";
   numero: number;
   municipio: string;
   uf: string;
@@ -33,11 +34,19 @@ export interface Contract {
   unidades: number;
   // Receita por linha de serviço
   receitaPorLinha: Record<ServiceLine, number>;
+  // Breakdown de Aerolevantamento
+  aero: {
+    drone: number;
+    tripulado: number;
+    valorKm2: number;
+    satelite: number;
+  };
   // Campos calculados
   ticketPorHabitante: number;
   diasParaVencer: number; // negativo se vencido
   statusVencimento: "vencido" | "criticos" | "atencao" | "saudavel";
   mrrSig: number; // soma das licenças /Mensal
+  mrrSigWeb: number; // só SIG Web /Mensal
   contratosSig: number; // qtd de módulos SIG contratados
   sigBreakdown: {
     modulo: string;
@@ -128,7 +137,7 @@ const SIG_MENSAL_IDX = [59, 60, 61, 62, 63, 64, 65, 66];
 const DEV_IDX = [67, 68, 69, 70, 71];
 const AERO_IDX = [20, 21, 22, 23];
 
-export function buildContract(row: string[]): Contract | null {
+function buildNovaGestao(row: string[]): Contract | null {
   if (!row || !row[1]) return null;
   const nRaw = String(row[0] ?? "").trim();
   if (!nRaw || !/^\d+/.test(nRaw)) return null;
@@ -179,6 +188,7 @@ export function buildContract(row: string[]): Contract | null {
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
   return {
+    gestao: "nova",
     numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
     municipio,
     uf,
@@ -195,20 +205,130 @@ export function buildContract(row: string[]): Contract | null {
     areaKm2: num(row, 18),
     unidades: num(row, 19),
     receitaPorLinha,
+    aero: {
+      drone: num(row, 20),
+      tripulado: num(row, 21),
+      valorKm2: num(row, 22),
+      satelite: num(row, 23),
+    },
     ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
     diasParaVencer,
     statusVencimento,
     mrrSig,
+    mrrSigWeb: num(row, SIG_MENSAL_IDX[0]),
     contratosSig,
     sigBreakdown,
   };
 }
 
-export function parseSheetValues(values: string[][]): Contract[] {
-  // Skip the 2 header rows
+// ---- Gestão Anterior column map ----
+// 0 Nº | 1 Município | 2 Contrato | 3 Data | 4 Vigência | 5 Projeção | 6 Ata | 7 Valor contrato
+// 8-21 Aditivos | 22 Vencimento | 23 Valor aditivado | 24 % | 25 Máx aditivos
+// 26-29 Aditivados (Aero/360/SIG) | 30 Área km² | 31 Unidades
+// 32 Aero drone | 33 Aero tripulado | 34 Aero Valor km² | 35 Satélite
+// 36 360º | 37 Atualização permanente
+// 38..50 Cadastro (Urbano, Uso/ocupação, Atualização imo, Rural, Atualização rural,
+//   Regularização, Coleta, Posturas, Vias, Postes, Arborização, Mobiliário, Cemitério)
+// 51 PVG | 52 PVG Rural | 53 Cód Trib | 54 Assessoria
+// 55 Plano Numeração | 56 Placas
+// 57-64 SIG Implantação | 65-72 SIG Licença | 73-78 SIG /Mensal (6 módulos)
+const ANT_AERO = [32, 33, 34, 35];
+const ANT_CADASTRO = [38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50];
+const ANT_PVG = [51, 52, 53, 54];
+const ANT_ENDER = [55, 56];
+const ANT_SIG_IMPL = [57, 58, 59, 60, 61, 62, 63, 64];
+const ANT_SIG_LIC = [65, 66, 67, 68, 69, 70, 71, 72];
+const ANT_SIG_MENSAL = [73, 74, 75, 76, 77, 78, -1, -1]; // Rastr/Cidadão ausentes
+
+function buildGestaoAnterior(row: string[]): Contract | null {
+  if (!row || !row[1]) return null;
+  const { municipio, uf } = splitMunicipio(row[1]);
+  if (!municipio) return null;
+  const valorContrato = num(row, 7);
+  if (valorContrato <= 0) return null;
+
+  const dataContrato = parseSheetDate(row[3]);
+  const vigenciaInicial = parseSheetDate(row[4]);
+  const vencimento = parseSheetDate(row[22]);
+
+  const receitaPorLinha: Record<ServiceLine, number> = {
+    "Aerolevantamento": sumIndexes(row, ANT_AERO.filter((i) => i >= 0)),
+    "Mapeamento 360º": num(row, 36),
+    "Atualização Permanente": num(row, 37),
+    "Cadastro Multifinalitário": sumIndexes(row, ANT_CADASTRO),
+    "PVG / Tributário": sumIndexes(row, ANT_PVG),
+    "Endereçamento Postal": sumIndexes(row, ANT_ENDER),
+    "SIG - Implantação": sumIndexes(row, ANT_SIG_IMPL),
+    "SIG - Licenças": sumIndexes(row, ANT_SIG_LIC),
+    "SIG - Mensal (MRR)": sumIndexes(row, ANT_SIG_MENSAL.filter((i) => i >= 0)),
+    "Desenvolvimento & Custom": 0,
+    "Taxa de Lixo": 0,
+  };
+
+  const mrrSig = receitaPorLinha["SIG - Mensal (MRR)"];
+  const contratosSig = ANT_SIG_LIC.filter((i) => num(row, i) > 0).length;
+
+  const sigBreakdown = SIG_MODULES.map((modulo, i) => ({
+    modulo,
+    implantacao: num(row, ANT_SIG_IMPL[i]),
+    licenca: num(row, ANT_SIG_LIC[i]),
+    mensal: ANT_SIG_MENSAL[i] >= 0 ? num(row, ANT_SIG_MENSAL[i]) : 0,
+  }));
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diasParaVencer = vencimento
+    ? Math.round((vencimento.getTime() - today.getTime()) / 86400000)
+    : 99999;
+  let statusVencimento: Contract["statusVencimento"] = "saudavel";
+  if (diasParaVencer < 0) statusVencimento = "vencido";
+  else if (diasParaVencer <= 30) statusVencimento = "criticos";
+  else if (diasParaVencer <= 90) statusVencimento = "atencao";
+
+  const nRaw = String(row[0] ?? "").trim();
+
+  return {
+    gestao: "anterior",
+    numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
+    municipio,
+    uf,
+    populacao: 0,
+    contrato: String(row[2] ?? "").trim(),
+    dataContrato,
+    vigenciaInicial,
+    vencimento,
+    valorAta: num(row, 6),
+    valorContrato,
+    valorAditivosMax: num(row, 25),
+    valorAditivado: num(row, 23),
+    percentualAditivado: num(row, 24) > 1 ? num(row, 24) / 100 : num(row, 24),
+    areaKm2: num(row, 30),
+    unidades: num(row, 31),
+    receitaPorLinha,
+    aero: {
+      drone: num(row, 32),
+      tripulado: num(row, 33),
+      valorKm2: num(row, 34),
+      satelite: num(row, 35),
+    },
+    ticketPorHabitante: 0,
+    diasParaVencer,
+    statusVencimento,
+    mrrSig,
+    mrrSigWeb: ANT_SIG_MENSAL[0] >= 0 ? num(row, ANT_SIG_MENSAL[0]) : 0,
+    contratosSig,
+    sigBreakdown,
+  };
+}
+
+export function parseSheet(
+  values: string[][],
+  gestao: "nova" | "anterior",
+): Contract[] {
+  const builder = gestao === "nova" ? buildNovaGestao : buildGestaoAnterior;
   return values
     .slice(2)
-    .map((r) => buildContract(r))
+    .map((r) => builder(r))
     .filter((c): c is Contract => c !== null);
 }
 
