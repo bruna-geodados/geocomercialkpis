@@ -13,6 +13,7 @@ import { Route as VigenciasRouteImport } from './routes/vigencias'
 import { Route as SigRouteImport } from './routes/sig'
 import { Route as ReceitaRouteImport } from './routes/receita'
 import { Route as MunicipiosRouteImport } from './routes/municipios'
+import { Route as AeroRouteImport } from './routes/aero'
 import { Route as IndexRouteImport } from './routes/index'
 
 const VigenciasRoute = VigenciasRouteImport.update({
@@ -35,6 +36,11 @@ const MunicipiosRoute = MunicipiosRouteImport.update({
   path: '/municipios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AeroRoute = AeroRouteImport.update({
+  id: '/aero',
+  path: '/aero',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aero': typeof AeroRoute
   '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
   '/sig': typeof SigRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aero': typeof AeroRoute
   '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
   '/sig': typeof SigRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/aero': typeof AeroRoute
   '/municipios': typeof MunicipiosRoute
   '/receita': typeof ReceitaRoute
   '/sig': typeof SigRoute
@@ -65,14 +74,22 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
+  fullPaths: '/' | '/aero' | '/municipios' | '/receita' | '/sig' | '/vigencias'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
-  id: '__root__' | '/' | '/municipios' | '/receita' | '/sig' | '/vigencias'
+  to: '/' | '/aero' | '/municipios' | '/receita' | '/sig' | '/vigencias'
+  id:
+    | '__root__'
+    | '/'
+    | '/aero'
+    | '/municipios'
+    | '/receita'
+    | '/sig'
+    | '/vigencias'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AeroRoute: typeof AeroRoute
   MunicipiosRoute: typeof MunicipiosRoute
   ReceitaRoute: typeof ReceitaRoute
   SigRoute: typeof SigRoute
@@ -109,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MunicipiosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/aero': {
+      id: '/aero'
+      path: '/aero'
+      fullPath: '/aero'
+      preLoaderRoute: typeof AeroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,6 +145,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AeroRoute: AeroRoute,
   MunicipiosRoute: MunicipiosRoute,
   ReceitaRoute: ReceitaRoute,
   SigRoute: SigRoute,

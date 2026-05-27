@@ -5,5 +5,8 @@ export const contractsQueryOptions = () =>
   queryOptions({
     queryKey: ["contracts"],
     queryFn: () => fetchContracts(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });

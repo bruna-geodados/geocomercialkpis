@@ -5,9 +5,11 @@ interface FiltersState {
   uf: string | "all";
   ano: number | "all";
   busca: string;
+  gestao: "nova" | "anterior" | "all";
   setUf: (v: string | "all") => void;
   setAno: (v: number | "all") => void;
   setBusca: (v: string) => void;
+  setGestao: (v: "nova" | "anterior" | "all") => void;
   reset: () => void;
 }
 
@@ -15,18 +17,21 @@ export const useFilters = create<FiltersState>((set) => ({
   uf: "all",
   ano: "all",
   busca: "",
+  gestao: "nova",
   setUf: (uf) => set({ uf }),
   setAno: (ano) => set({ ano }),
   setBusca: (busca) => set({ busca }),
-  reset: () => set({ uf: "all", ano: "all", busca: "" }),
+  setGestao: (gestao) => set({ gestao }),
+  reset: () => set({ uf: "all", ano: "all", busca: "", gestao: "nova" }),
 }));
 
 export function applyFilters(
   contracts: Contract[],
-  f: Pick<FiltersState, "uf" | "ano" | "busca">,
+  f: Pick<FiltersState, "uf" | "ano" | "busca" | "gestao">,
 ): Contract[] {
   const q = f.busca.trim().toLowerCase();
   return contracts.filter((c) => {
+    if (f.gestao !== "all" && c.gestao !== f.gestao) return false;
     if (f.uf !== "all" && c.uf !== f.uf) return false;
     if (f.ano !== "all") {
       const y = c.dataContrato?.getFullYear();
