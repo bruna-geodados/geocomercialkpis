@@ -7,6 +7,7 @@ import {
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
 import { fmtBRL, fmtBRLShort, fmtInt, sigModuleAggregates, SIG_MODULES } from "@/lib/contracts";
+import { Badge } from "@/components/ui/badge";
 import { PageShell } from "@/components/page-shell";
 import { KpiCard } from "@/components/kpi-card";
 import { FiltersBar } from "@/components/filters-bar";
@@ -57,6 +58,27 @@ function SigPage() {
     }).sort((a, b) => b.qtdSem - a.qtdSem);
   }, [contracts]);
 
+  // SIG Web /Mensal — detalhamento por município
+  const webMensalDetalhe = useMemo(
+    () =>
+      contracts
+        .map((c) => ({
+          municipio: c.municipio,
+          uf: c.uf,
+          gestao: c.gestao,
+          webImpl: c.sigBreakdown[0]?.implantacao ?? 0,
+          webLic: c.sigBreakdown[0]?.licenca ?? 0,
+          webMensal: c.mrrSigWeb,
+          mrrTotal: c.mrrSig,
+        }))
+        .filter((r) => r.webMensal > 0 || r.webLic > 0 || r.webImpl > 0)
+        .sort((a, b) => b.webMensal - a.webMensal),
+    [contracts],
+  );
+  const totalWebMensal = webMensalDetalhe.reduce((s, r) => s + r.webMensal, 0);
+  const totalWebLic = webMensalDetalhe.reduce((s, r) => s + r.webLic, 0);
+  const totalWebImpl = webMensalDetalhe.reduce((s, r) => s + r.webImpl, 0);
+
   return (
     <PageShell
       title="SIG & Licenças Recorrentes"
@@ -85,6 +107,59 @@ function SigPage() {
               <Bar dataKey="Mensal" fill="oklch(0.68 0.10 220)" stackId="a" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="SIG Web / Mensal — detalhamento"
+        description={`MRR Web: ${fmtBRL(totalWebMensal)} · Licença Web: ${fmtBRL(totalWebLic)} · Implantação Web: ${fmtBRL(totalWebImpl)}`}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b">
+                <th className="py-2 pr-4">Município</th>
+                <th className="py-2 pr-4">UF</th>
+                <th className="py-2 pr-4">Gestão</th>
+                <th className="py-2 pr-4 text-right">SIG Web Implantação</th>
+                <th className="py-2 pr-4 text-right">SIG Web Licença</th>
+                <th className="py-2 pr-4 text-right">SIG Web/Mensal</th>
+                <th className="py-2 pr-4 text-right">% do MRR total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {webMensalDetalhe.map((r) => (
+                <tr key={r.municipio + r.uf + r.gestao} className="border-b border-border/40 hover:bg-muted/30">
+                  <td className="py-2.5 pr-4 font-medium">{r.municipio}</td>
+                  <td className="py-2.5 pr-4 text-muted-foreground">{r.uf}</td>
+                  <td className="py-2.5 pr-4">
+                    <Badge variant={r.gestao === "nova" ? "default" : "secondary"} className="text-[10px]">
+                      {r.gestao === "nova" ? "Nova" : "Anterior"}
+                    </Badge>
+                  </td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums">
+                    {r.webImpl > 0 ? fmtBRL(r.webImpl) : "—"}
+                  </td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums">
+                    {r.webLic > 0 ? fmtBRL(r.webLic) : "—"}
+                  </td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums font-semibold text-[oklch(0.55_0.14_155)]">
+                    {r.webMensal > 0 ? fmtBRL(r.webMensal) : "—"}
+                  </td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
+                    {r.mrrTotal > 0 ? `${((r.webMensal / r.mrrTotal) * 100).toFixed(0)}%` : "—"}
+                  </td>
+                </tr>
+              ))}
+              {webMensalDetalhe.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                    Nenhum município com SIG Web neste filtro.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </SectionCard>
 
