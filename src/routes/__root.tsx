@@ -11,6 +11,7 @@ import {
 import appCss from "../styles.css?url";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { LiveRefreshIndicator } from "@/components/live-refresh-indicator";
 
 function NotFoundComponent() {
   return (
@@ -131,6 +132,9 @@ function RootComponent() {
                 <span className="text-sm font-semibold text-foreground">
                   Análise de Contratos Municipais
                 </span>
+              </div>
+              <div className="ml-auto">
+                <LiveRefreshIndicator />
               </div>
             </header>
             <main className="flex-1 min-w-0">
