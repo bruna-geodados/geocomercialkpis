@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, TrendingUp, CalendarClock, MapPin, Layers } from "lucide-react";
+import { LayoutDashboard, TrendingUp, CalendarClock, MapPin, Layers, Plane } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader,
@@ -8,6 +8,7 @@ import {
 const items = [
   { title: "Visão Geral", url: "/", icon: LayoutDashboard },
   { title: "Receita por Serviço", url: "/receita", icon: TrendingUp },
+  { title: "Aerolevantamento", url: "/aero", icon: Plane },
   { title: "Contratos & Vigências", url: "/vigencias", icon: CalendarClock },
   { title: "Municípios", url: "/municipios", icon: MapPin },
   { title: "SIG & Licenças", url: "/sig", icon: Layers },
