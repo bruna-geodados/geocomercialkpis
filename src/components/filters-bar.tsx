@@ -9,7 +9,8 @@ import { useFilters, applyFilters, toCSV, downloadCSV } from "@/lib/filters-stor
 import type { Contract } from "@/lib/contracts";
 
 export function FiltersBar({ contracts }: { contracts: Contract[] }) {
-  const { uf, ano, busca, setUf, setAno, setBusca, reset } = useFilters();
+  const { uf, ano, busca, gestao, setUf, setAno, setBusca, setGestao, reset } =
+    useFilters();
 
   const ufs = useMemo(
     () => Array.from(new Set(contracts.map((c) => c.uf).filter(Boolean))).sort(),
@@ -25,10 +26,33 @@ export function FiltersBar({ contracts }: { contracts: Contract[] }) {
     [contracts],
   );
 
-  const active = uf !== "all" || ano !== "all" || busca.trim().length > 0;
+  const active =
+    uf !== "all" || ano !== "all" || busca.trim().length > 0 || gestao !== "nova";
 
   return (
     <div className="flex flex-wrap gap-2 items-center bg-card border rounded-lg p-3">
+      <div className="inline-flex rounded-md border bg-background p-0.5 text-xs font-medium">
+        {(
+          [
+            { v: "nova", label: "Nova Gestão" },
+            { v: "anterior", label: "Gestão Anterior" },
+            { v: "all", label: "Todas" },
+          ] as const
+        ).map((opt) => (
+          <button
+            key={opt.v}
+            onClick={() => setGestao(opt.v)}
+            className={
+              "px-3 py-1.5 rounded transition-colors " +
+              (gestao === opt.v
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground")
+            }
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
       <div className="relative flex-1 min-w-[220px]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -74,7 +98,7 @@ export function FiltersBar({ contracts }: { contracts: Contract[] }) {
         onClick={() =>
           downloadCSV(
             `contratos-${new Date().toISOString().slice(0, 10)}.csv`,
-            toCSV(applyFilters(contracts, { uf, ano, busca })),
+            toCSV(applyFilters(contracts, { uf, ano, busca, gestao })),
           )
         }
       >
