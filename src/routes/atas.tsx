@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useMemo, useEffect } from "react";
+import { Suspense, useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from "recharts";
@@ -36,19 +36,14 @@ const COLORS = [
 
 function AtasPage() {
   const { data } = useSuspenseQuery(contractsQueryOptions());
-  const { setGestao, gestao, ...rest } = useFilters();
-
-  // Atas page always scopes the data to the Atas tab.
-  useEffect(() => {
-    if (gestao !== "ata") setGestao("ata");
-  }, [gestao, setGestao]);
+  const filters = useFilters();
 
   const atas = useMemo(
     () =>
-      applyFilters(data.contracts, { ...rest, gestao: "ata" }).sort(
+      applyFilters(data.contracts, { ...filters, gestao: "ata" }).sort(
         (a, b) => b.valorAta - a.valorAta,
       ),
-    [data, rest],
+    [data, filters],
   );
 
   const totalAta = atas.reduce((s, c) => s + c.valorAta, 0);
