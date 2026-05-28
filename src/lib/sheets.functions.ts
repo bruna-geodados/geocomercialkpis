@@ -3,6 +3,7 @@ import { parseSheet, type Contract } from "./contracts";
 
 const SPREADSHEET_ID = "1GLGSTS7a8bnLiwUjq-u3EN09Fi_is1KzCDdbcZTOy0A";
 const RANGE_NOVA = "Nova gestão !A1:BX300";
+const RANGE_ATAS = "Atas de registro - Nova gestão!A1:BX300";
 const RANGE_ANT = "Gestão anterior - Aditivados!A1:CA300";
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 
@@ -16,6 +17,7 @@ export const fetchContracts = createServerFn({ method: "GET" }).handler(
 
     const params = new URLSearchParams();
     params.append("ranges", RANGE_NOVA);
+    params.append("ranges", RANGE_ATAS);
     params.append("ranges", RANGE_ANT);
     const url = `${GATEWAY}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${params.toString()}`;
     const res = await fetch(url, {
@@ -32,10 +34,14 @@ export const fetchContracts = createServerFn({ method: "GET" }).handler(
       valueRanges?: { range: string; values?: string[][] }[];
     };
     const ranges = data.valueRanges ?? [];
-    const novaRange = ranges.find((r) => r.range.includes("Nova"));
+    const novaRange = ranges.find(
+      (r) => r.range.includes("Nova gest") && !r.range.includes("Atas"),
+    );
+    const atasRange = ranges.find((r) => r.range.includes("Atas"));
     const antRange = ranges.find((r) => r.range.includes("anterior"));
     const contracts = [
       ...parseSheet(novaRange?.values ?? [], "nova"),
+      ...parseSheet(atasRange?.values ?? [], "ata"),
       ...parseSheet(antRange?.values ?? [], "anterior"),
     ];
     return { contracts, fetchedAt: new Date().toISOString() };
