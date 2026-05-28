@@ -35,6 +35,7 @@ export function FiltersBar({ contracts }: { contracts: Contract[] }) {
         {(
           [
             { v: "nova", label: "Nova Gestão" },
+            { v: "ata", label: "Atas de Registro" },
             { v: "anterior", label: "Gestão Anterior" },
             { v: "all", label: "Todas" },
           ] as const
