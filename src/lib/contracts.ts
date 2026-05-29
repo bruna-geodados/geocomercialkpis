@@ -41,8 +41,16 @@ export interface Contract {
     valorKm2: number;
     satelite: number;
   };
+  // Aditivos vigentes — específico da Gestão Anterior (colunas AB-AE)
+  aditivoVigente: {
+    aeroDrone: number;       // AB
+    m360: number;            // AC
+    sigWebLicenca: number;   // AD
+    sigWebMensal: number;    // AE
+  };
   // Campos calculados
   ticketPorHabitante: number;
+  ticketPorImovel: number;
   diasParaVencer: number; // negativo se vencido
   statusVencimento: "vencido" | "criticos" | "atencao" | "saudavel";
   mrrSig: number; // soma das licenças /Mensal
@@ -249,7 +257,9 @@ function buildNovaGestao(row: string[]): Contract | null {
       valorKm2: num(row, NOVA.aero[2]),
       satelite: num(row, NOVA.aero[3]),
     },
+    aditivoVigente: { aeroDrone: 0, m360: 0, sigWebLicenca: 0, sigWebMensal: 0 },
     ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
+    ticketPorImovel: num(row, NOVA.unidades) > 0 ? valorContrato / num(row, NOVA.unidades) : 0,
     diasParaVencer,
     statusVencimento,
     mrrSig,
@@ -341,7 +351,9 @@ function buildAta(row: string[]): Contract | null {
       valorKm2: num(row, ATA.aero[2]),
       satelite: num(row, ATA.aero[3]),
     },
+    aditivoVigente: { aeroDrone: 0, m360: 0, sigWebLicenca: 0, sigWebMensal: 0 },
     ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
+    ticketPorImovel: num(row, ATA.unidades) > 0 ? valorContrato / num(row, ATA.unidades) : 0,
     diasParaVencer,
     statusVencimento,
     mrrSig,
@@ -352,26 +364,38 @@ function buildAta(row: string[]): Contract | null {
 }
 
 // ============================================================
-// Gestão Anterior - Aditivados (92 cols, 1-based row labels)
-// 7 Valor da Ata | 8 Valor contrato | 23 Vencimento atualizado
-// 24 Valor aditivado | 25 % Aditivada | 26 Valor máx aditivos
-// 31 Área km² | 32 Unidades
-// 33-36 Aero (drone, tripulado, km², satélite)
-// 37 360º | 38 Atualização permanente
-// 39-55 Cadastro (Urbano, Uso/ocup, Atual imo, Digit doc, Mapa Rural,
-//   Atual rural, Regul, Coleta, Posturas, Vias, Postes, Arboriz,
-//   Saúde, Educação, Assist Social, Mobiliário, Cemitério)
-// 56-59 PVG | 60-61 Endereçamento
-// 62-69 SIG Impl | 70-77 SIG Lic | 78-85 SIG Mensal (8 módulos)
-// 86-90 Desenvolvimento | 91 Taxa de Lixo
+// Gestão Anterior - Aditivados (94 cols, real spreadsheet schema)
+// 0 Nº | 1 Município | 2 População | 3 Contrato | 4 Data | 5 Vigência inicial
+// 7 H  Valor da Ata | 8 I Valor do contrato
+// 9-22 J-W Aditivos TA pairs
+// 23 X Vencimento atualizado | 24 Y Valor aditivado | 25 Z % Aditivada
+// 26 AA Valor máx aditivos
+// --- Aditivos VIGENTES (em destaque) ---
+// 27 AB Aero drone (aditivo) | 28 AC 360º (aditivo)
+// 29 AD SIG Web Licença (aditivo) | 30 AE SIG Web/Mensal (aditivo)
+// --- Quantitativos ---
+// 31 AF Área km² | 32 AG Quantidade de imóveis
+// --- Receita por linha ---
+// 33-36 AH-AK Aero (drone, tripulado, km², satélite)
+// 37 AL 360º | 38 AM Atualização permanente
+// 39-57 AN-BF Cadastro Multifinalitário (19 cols: Mapa Urbano + Uso/Ocup +
+//   17 itens cadastro: imobil, digitaliz, mapa rural, atual rural, regul,
+//   coleta, posturas, vias, postes, arboriz, aguas pluv, app, saúde, edu,
+//   assist, mobiliário, cemit)
+// 58-61 BG-BJ PVG | 62-63 BK-BL Endereçamento
+// 64-71 BM-BT SIG Impl | 72-79 BU-CB SIG Lic | 80-87 CC-CJ SIG Mensal
+// 88-92 CK-CO Desenvolvimento | 93 CP Taxa de Lixo
 const ANT_AERO = [33, 34, 35, 36];
-const ANT_CADASTRO = [39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55];
-const ANT_PVG = [56, 57, 58, 59];
-const ANT_ENDER = [60, 61];
-const ANT_SIG_IMPL = [62, 63, 64, 65, 66, 67, 68, 69];
-const ANT_SIG_LIC = [70, 71, 72, 73, 74, 75, 76, 77];
-const ANT_SIG_MENSAL = [78, 79, 80, 81, 82, 83, 84, 85];
-const ANT_DEV = [86, 87, 88, 89, 90];
+const ANT_CADASTRO = [
+  39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+];
+const ANT_PVG = [58, 59, 60, 61];
+const ANT_ENDER = [62, 63];
+const ANT_SIG_IMPL = [64, 65, 66, 67, 68, 69, 70, 71];
+const ANT_SIG_LIC = [72, 73, 74, 75, 76, 77, 78, 79];
+const ANT_SIG_MENSAL = [80, 81, 82, 83, 84, 85, 86, 87];
+const ANT_DEV = [88, 89, 90, 91, 92];
+const ANT_TAXA_LIXO = 93;
 
 function buildGestaoAnterior(row: string[]): Contract | null {
   if (!row || !row[1]) return null;
@@ -380,8 +404,9 @@ function buildGestaoAnterior(row: string[]): Contract | null {
   const valorContrato = num(row, 8);
   if (valorContrato <= 0) return null;
 
-  const dataContrato = parseSheetDate(row[3]);
-  const vigenciaInicial = parseSheetDate(row[4]);
+  const populacao = num(row, 2);
+  const dataContrato = parseSheetDate(row[4]);
+  const vigenciaInicial = parseSheetDate(row[5]);
   const vencimento = parseSheetDate(row[23]);
 
   const receitaPorLinha: Record<ServiceLine, number> = {
@@ -395,7 +420,7 @@ function buildGestaoAnterior(row: string[]): Contract | null {
     "SIG - Licenças": sumIndexes(row, ANT_SIG_LIC),
     "SIG - Mensal (MRR)": sumIndexes(row, ANT_SIG_MENSAL),
     "Desenvolvimento & Custom": sumIndexes(row, ANT_DEV),
-    "Taxa de Lixo": num(row, 91),
+    "Taxa de Lixo": num(row, ANT_TAXA_LIXO),
   };
 
   const mrrSig = receitaPorLinha["SIG - Mensal (MRR)"];
@@ -419,13 +444,14 @@ function buildGestaoAnterior(row: string[]): Contract | null {
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
   const nRaw = String(row[0] ?? "").trim();
+  const unidades = num(row, 32);
 
   return {
     gestao: "anterior",
     numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
     municipio,
     uf,
-    populacao: 0,
+    populacao,
     contrato: String(row[3] ?? "").trim(),
     dataContrato,
     vigenciaInicial,
@@ -436,7 +462,7 @@ function buildGestaoAnterior(row: string[]): Contract | null {
     valorAditivado: num(row, 24),
     percentualAditivado: num(row, 25) > 1 ? num(row, 25) / 100 : num(row, 25),
     areaKm2: num(row, 31),
-    unidades: num(row, 32),
+    unidades,
     receitaPorLinha,
     aero: {
       drone: num(row, ANT_AERO[0]),
@@ -444,7 +470,14 @@ function buildGestaoAnterior(row: string[]): Contract | null {
       valorKm2: num(row, ANT_AERO[2]),
       satelite: num(row, ANT_AERO[3]),
     },
-    ticketPorHabitante: 0,
+    aditivoVigente: {
+      aeroDrone: num(row, 27),
+      m360: num(row, 28),
+      sigWebLicenca: num(row, 29),
+      sigWebMensal: num(row, 30),
+    },
+    ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
+    ticketPorImovel: unidades > 0 ? valorContrato / unidades : 0,
     diasParaVencer,
     statusVencimento,
     mrrSig,
@@ -475,12 +508,13 @@ export const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 
 export const fmtBRLShort = (n: number) => {
-  if (Math.abs(n) >= 1_000_000) return `R$ ${(n / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(n) >= 1_000) return `R$ ${(n / 1_000).toFixed(0)}k`;
+  if (Math.abs(n) >= 1_000_000) return `R$ ${(n / 1_000_000).toFixed(2)}M`;
+  if (Math.abs(n) >= 1_000) return `R$ ${(n / 1_000).toFixed(2)}k`;
   return fmtBRL(n);
 };
 

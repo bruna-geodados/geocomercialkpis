@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { Plane, Cpu, Ruler, Satellite } from "lucide-react";
+import { Plane, Cpu, Ruler, Satellite, Home } from "lucide-react";
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
 import { fmtBRL, fmtBRLShort, fmtInt } from "@/lib/contracts";
@@ -49,6 +49,8 @@ function AeroPage() {
   const qtdDrone = contracts.filter((c) => c.aero.drone > 0).length;
   const qtdTripulado = contracts.filter((c) => c.aero.tripulado > 0).length;
   const qtdSatelite = contracts.filter((c) => c.aero.satelite > 0).length;
+  const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
+  const aeroPorImovel = totalImoveis > 0 ? total / totalImoveis : 0;
 
   const mix = [
     { tipo: "Drone (não tripulado)", valor: totalDrone, qtd: qtdDrone },
@@ -86,7 +88,7 @@ function AeroPage() {
     >
       <FiltersBar contracts={data.contracts} />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KpiCard
           label="Drone (não tripulado)"
           value={fmtBRLShort(totalDrone)}
@@ -112,6 +114,12 @@ function AeroPage() {
           value={fmtBRLShort(totalSatelite)}
           hint={`${qtdSatelite} municípios`}
           icon={<Satellite className="h-4 w-4" />}
+        />
+        <KpiCard
+          label="Aero / imóvel"
+          value={fmtBRL(aeroPorImovel)}
+          hint={`${fmtInt(totalImoveis)} imóveis`}
+          icon={<Home className="h-4 w-4" />}
         />
       </div>
 

@@ -4,7 +4,7 @@ import { parseSheet, type Contract } from "./contracts";
 const SPREADSHEET_ID = "1GLGSTS7a8bnLiwUjq-u3EN09Fi_is1KzCDdbcZTOy0A";
 const RANGE_NOVA = "Nova gestão !A1:BX300";
 const RANGE_ATAS = "Atas de registro - Nova gestão!A1:BX300";
-const RANGE_ANT = "Gestão anterior - Aditivados!A1:CA300";
+const RANGE_ANT = "Gestão anterior - Aditivados!A1:CS300";
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 
 export const fetchContracts = createServerFn({ method: "GET" }).handler(

@@ -8,6 +8,7 @@ import {
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
 import { fmtBRL, fmtBRLShort, fmtInt, SERVICE_LINES, fmtDate } from "@/lib/contracts";
+import { Home } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { KpiCard } from "@/components/kpi-card";
 import { FiltersBar } from "@/components/filters-bar";
@@ -29,6 +30,8 @@ function Municipios() {
   const valorTotal = contracts.reduce((s, c) => s + c.valorContrato, 0);
   const ticketHabMedio = populacaoTotal > 0 ? valorTotal / populacaoTotal : 0;
   const areaTotal = contracts.reduce((s, c) => s + c.areaKm2, 0);
+  const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
+  const valorPorImovel = totalImoveis > 0 ? valorTotal / totalImoveis : 0;
 
   const scatterData = useMemo(
     () =>
@@ -52,11 +55,12 @@ function Municipios() {
     >
       <FiltersBar contracts={data.contracts} />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KpiCard label="Municípios" value={fmtInt(contracts.length)} />
         <KpiCard label="População Atendida" value={fmtInt(populacaoTotal)} hint="Soma de habitantes" />
+        <KpiCard label="Imóveis" value={fmtInt(totalImoveis)} hint={`R$/imóvel: ${fmtBRL(valorPorImovel)}`} icon={<Home className="h-4 w-4" />} tone="accent" />
         <KpiCard label="Área Total" value={`${fmtInt(Math.round(areaTotal))} km²`} />
-        <KpiCard label="R$ por habitante (média)" value={fmtBRL(ticketHabMedio)} tone="accent" />
+        <KpiCard label="R$ por habitante (média)" value={fmtBRL(ticketHabMedio)} />
       </div>
 
       <SectionCard title="População vs Valor do Contrato" description="Cada ponto = um município">

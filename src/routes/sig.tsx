@@ -7,6 +7,7 @@ import {
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
 import { fmtBRL, fmtBRLShort, fmtInt, sigModuleAggregates, SIG_MODULES } from "@/lib/contracts";
+import { Home } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageShell } from "@/components/page-shell";
 import { KpiCard } from "@/components/kpi-card";
@@ -34,6 +35,8 @@ function SigPage() {
     [contracts],
   );
   const clientesSig = contracts.filter((c) => c.contratosSig > 0).length;
+  const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
+  const mrrPorImovel = totalImoveis > 0 ? mrr / totalImoveis : 0;
 
   const dadosModulos = useMemo(() => {
     const impl = sigModuleAggregates(contracts, "implantacao");
@@ -86,11 +89,12 @@ function SigPage() {
     >
       <FiltersBar contracts={data.contracts} />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KpiCard label="MRR Total" value={fmtBRLShort(mrr)} hint={fmtBRL(mrr)} tone="success" />
         <KpiCard label="Implantação" value={fmtBRLShort(implTotal)} hint="Receita única (setup)" />
         <KpiCard label="Licenças" value={fmtBRLShort(licTotal)} hint="Licença anual" tone="accent" />
         <KpiCard label="Clientes SIG" value={fmtInt(clientesSig)} hint={`${contracts.length - clientesSig} sem nenhum módulo`} />
+        <KpiCard label="MRR / imóvel" value={fmtBRL(mrrPorImovel)} hint={`${fmtInt(totalImoveis)} imóveis na carteira`} icon={<Home className="h-4 w-4" />} />
       </div>
 
       <SectionCard title="Mix por Módulo SIG" description="Implantação, Licença e Mensal por módulo">
