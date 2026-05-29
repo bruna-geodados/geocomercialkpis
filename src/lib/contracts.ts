@@ -508,12 +508,13 @@ export const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 
 export const fmtBRLShort = (n: number) => {
-  if (Math.abs(n) >= 1_000_000) return `R$ ${(n / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(n) >= 1_000) return `R$ ${(n / 1_000).toFixed(0)}k`;
+  if (Math.abs(n) >= 1_000_000) return `R$ ${(n / 1_000_000).toFixed(2)}M`;
+  if (Math.abs(n) >= 1_000) return `R$ ${(n / 1_000).toFixed(2)}k`;
   return fmtBRL(n);
 };
 
