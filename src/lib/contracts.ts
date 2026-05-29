@@ -41,8 +41,16 @@ export interface Contract {
     valorKm2: number;
     satelite: number;
   };
+  // Aditivos vigentes — específico da Gestão Anterior (colunas AB-AE)
+  aditivoVigente: {
+    aeroDrone: number;       // AB
+    m360: number;            // AC
+    sigWebLicenca: number;   // AD
+    sigWebMensal: number;    // AE
+  };
   // Campos calculados
   ticketPorHabitante: number;
+  ticketPorImovel: number;
   diasParaVencer: number; // negativo se vencido
   statusVencimento: "vencido" | "criticos" | "atencao" | "saudavel";
   mrrSig: number; // soma das licenças /Mensal
