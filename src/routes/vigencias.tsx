@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
-import { AlertTriangle, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, XCircle, Home } from "lucide-react";
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
 import { fmtBRL, fmtBRLShort, fmtDate, fmtPct } from "@/lib/contracts";
@@ -36,6 +36,9 @@ function Vigencias() {
   }, [contracts]);
 
   const aditivoAlto = contracts.filter((c) => c.percentualAditivado >= 0.2).length;
+  const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
+  const totalValor = contracts.reduce((s, c) => s + c.valorContrato, 0);
+  const valorPorImovel = totalImoveis > 0 ? totalValor / totalImoveis : 0;
 
   const ordenados = useMemo(
     () => [...contracts].sort((a, b) => a.diasParaVencer - b.diasParaVencer),
@@ -49,12 +52,13 @@ function Vigencias() {
     >
       <FiltersBar contracts={data.contracts} />
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <KpiCard label="Vencidos" value={String(counts.vencido)} tone="danger" icon={<XCircle className="h-4 w-4" />} />
         <KpiCard label="Críticos (≤30d)" value={String(counts.criticos)} tone="danger" icon={<AlertTriangle className="h-4 w-4" />} />
         <KpiCard label="Atenção (≤90d)" value={String(counts.atencao)} tone="warning" icon={<Clock className="h-4 w-4" />} />
         <KpiCard label="Saudáveis" value={String(counts.saudavel)} tone="success" icon={<CheckCircle2 className="h-4 w-4" />} />
         <KpiCard label="Aditivo ≥20%" value={String(aditivoAlto)} hint="Próximos do teto de 25%" tone={aditivoAlto > 0 ? "warning" : "default"} />
+        <KpiCard label="Imóveis" value={String(totalImoveis.toLocaleString("pt-BR"))} hint={`R$/imóvel: ${fmtBRL(valorPorImovel)}`} icon={<Home className="h-4 w-4" />} />
       </div>
 
       <SectionCard title="Timeline de Vencimentos" description="Ordenado do mais próximo ao mais distante">
