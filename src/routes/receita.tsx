@@ -13,6 +13,7 @@ import { FiltersBar } from "@/components/filters-bar";
 import { SectionCard } from "@/components/section-card";
 import { LoadingState } from "@/components/loading-state";
 import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 
 export const Route = createFileRoute("/receita")({
   loader: ({ context }) => context.queryClient.ensureQueryData(contractsQueryOptions()),
@@ -28,6 +29,8 @@ function Receita() {
   const [linhaSelecionada, setLinhaSelecionada] = useState<ServiceLine>("Cadastro Multifinalitário");
 
   const totalGeral = contracts.reduce((s, c) => s + c.valorContrato, 0);
+  const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
+  const valorPorImovel = totalImoveis > 0 ? totalGeral / totalImoveis : 0;
 
   const porLinha = useMemo(
     () =>
@@ -61,7 +64,7 @@ function Receita() {
     >
       <FiltersBar contracts={data.contracts} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {top3.map((r, i) => (
           <KpiCard
             key={r.linha}
@@ -71,6 +74,12 @@ function Receita() {
             tone={i === 0 ? "accent" : "default"}
           />
         ))}
+        <KpiCard
+          label="Imóveis na carteira"
+          value={totalImoveis.toLocaleString("pt-BR")}
+          hint={`R$/imóvel médio: ${fmtBRL(valorPorImovel)}`}
+          icon={<Home className="h-4 w-4" />}
+        />
       </div>
 
       <SectionCard title="Faturamento por Linha de Serviço">
