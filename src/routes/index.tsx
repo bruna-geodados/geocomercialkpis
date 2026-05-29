@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import {
-  Briefcase, DollarSign, TrendingUp, AlertTriangle, Building2, Percent,
+  Briefcase, DollarSign, TrendingUp, AlertTriangle, Home, Percent, Sparkles,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -55,6 +55,36 @@ function VisaoGeral() {
   const aditivoMedio = contracts.length
     ? contracts.reduce((s, c) => s + c.percentualAditivado, 0) / contracts.length
     : 0;
+  const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
+  const valorPorImovel = totalImoveis > 0 ? totalValor / totalImoveis : 0;
+
+  // Aditivos vigentes — somente Gestão Anterior tem essas colunas (AB-AE)
+  const anteriores = contracts.filter((c) => c.gestao === "anterior");
+  const aditivoVigente = {
+    aeroDrone: anteriores.reduce((s, c) => s + c.aditivoVigente.aeroDrone, 0),
+    m360: anteriores.reduce((s, c) => s + c.aditivoVigente.m360, 0),
+    sigWebLicenca: anteriores.reduce(
+      (s, c) => s + c.aditivoVigente.sigWebLicenca,
+      0,
+    ),
+    sigWebMensal: anteriores.reduce(
+      (s, c) => s + c.aditivoVigente.sigWebMensal,
+      0,
+    ),
+  };
+  const totalAditivoVigente =
+    aditivoVigente.aeroDrone +
+    aditivoVigente.m360 +
+    aditivoVigente.sigWebLicenca +
+    aditivoVigente.sigWebMensal;
+  const municipiosComAditivo = anteriores.filter(
+    (c) =>
+      c.aditivoVigente.aeroDrone +
+        c.aditivoVigente.m360 +
+        c.aditivoVigente.sigWebLicenca +
+        c.aditivoVigente.sigWebMensal >
+      0,
+  );
 
   const porUF = useMemo(() => {
     const m = new Map<string, { uf: string; valor: number; contratos: number }>();
@@ -89,14 +119,110 @@ function VisaoGeral() {
     >
       <FiltersBar contracts={data.contracts} />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
         <KpiCard label="Contratos" value={fmtInt(contracts.length)} icon={<Briefcase className="h-4 w-4" />} />
         <KpiCard label="Carteira Total" value={fmtBRLShort(totalValor)} hint={fmtBRL(totalValor)} icon={<DollarSign className="h-4 w-4" />} tone="accent" />
         <KpiCard label="Ticket Médio" value={fmtBRLShort(ticketMedio)} icon={<TrendingUp className="h-4 w-4" />} />
+        <KpiCard label="Imóveis" value={fmtInt(totalImoveis)} hint={`R$/imóvel: ${fmtBRL(valorPorImovel)}`} icon={<Home className="h-4 w-4" />} />
         <KpiCard label="MRR SIG" value={fmtBRLShort(mrr)} hint="Licenças mensais" tone="success" />
         <KpiCard label="% Aditivado Médio" value={fmtPct(aditivoMedio)} icon={<Percent className="h-4 w-4" />} hint={`Total: ${fmtBRLShort(totalAditivado)}`} />
         <KpiCard label="Vencendo em 90d" value={fmtInt(vencendo90)} icon={<AlertTriangle className="h-4 w-4" />} tone={vencendo90 > 0 ? "warning" : "default"} />
       </div>
+
+      {anteriores.length > 0 && totalAditivoVigente > 0 && (
+        <SectionCard
+          title="Aditivos Vigentes — Gestão Anterior"
+          description="Serviços e sistemas adicionados via aditivo contratual (colunas AB · AC · AD · AE)"
+          className="border-2 border-accent/40 bg-accent/[0.03] shadow-md"
+          action={
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent">
+              <Sparkles className="h-3.5 w-3.5" /> Em destaque
+            </span>
+          }
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <KpiCard
+              label="Aero Drone (aditivo)"
+              value={fmtBRLShort(aditivoVigente.aeroDrone)}
+              hint={fmtBRL(aditivoVigente.aeroDrone)}
+              tone="accent"
+            />
+            <KpiCard
+              label="360º (aditivo)"
+              value={fmtBRLShort(aditivoVigente.m360)}
+              hint={fmtBRL(aditivoVigente.m360)}
+              tone="accent"
+            />
+            <KpiCard
+              label="SIG Web Licença (aditivo)"
+              value={fmtBRLShort(aditivoVigente.sigWebLicenca)}
+              hint={fmtBRL(aditivoVigente.sigWebLicenca)}
+              tone="accent"
+            />
+            <KpiCard
+              label="SIG Web/Mensal (aditivo)"
+              value={fmtBRLShort(aditivoVigente.sigWebMensal)}
+              hint={fmtBRL(aditivoVigente.sigWebMensal)}
+              tone="success"
+            />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b">
+                  <th className="py-2 pr-4">Município</th>
+                  <th className="py-2 pr-4 text-right">Aero Drone (AB)</th>
+                  <th className="py-2 pr-4 text-right">360º (AC)</th>
+                  <th className="py-2 pr-4 text-right">SIG Web Lic. (AD)</th>
+                  <th className="py-2 pr-4 text-right">SIG Web/Mensal (AE)</th>
+                  <th className="py-2 pr-4 text-right">Total aditivos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {municipiosComAditivo
+                  .map((c) => ({
+                    c,
+                    total:
+                      c.aditivoVigente.aeroDrone +
+                      c.aditivoVigente.m360 +
+                      c.aditivoVigente.sigWebLicenca +
+                      c.aditivoVigente.sigWebMensal,
+                  }))
+                  .sort((a, b) => b.total - a.total)
+                  .map(({ c, total }) => (
+                    <tr key={`adv-${c.numero}-${c.municipio}`} className="border-b border-border/40 hover:bg-accent/[0.04]">
+                      <td className="py-2.5 pr-4 font-medium">
+                        {c.municipio} <span className="text-muted-foreground">{c.uf}</span>
+                      </td>
+                      <td className="py-2.5 pr-4 text-right tabular-nums">
+                        {c.aditivoVigente.aeroDrone > 0 ? fmtBRL(c.aditivoVigente.aeroDrone) : "—"}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right tabular-nums">
+                        {c.aditivoVigente.m360 > 0 ? fmtBRL(c.aditivoVigente.m360) : "—"}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right tabular-nums">
+                        {c.aditivoVigente.sigWebLicenca > 0 ? fmtBRL(c.aditivoVigente.sigWebLicenca) : "—"}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right tabular-nums text-[oklch(0.55_0.14_155)] font-semibold">
+                        {c.aditivoVigente.sigWebMensal > 0 ? fmtBRL(c.aditivoVigente.sigWebMensal) : "—"}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right tabular-nums font-semibold">
+                        {fmtBRL(total)}
+                      </td>
+                    </tr>
+                  ))}
+                {municipiosComAditivo.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                      Nenhum aditivo vigente nesta seleção.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </SectionCard>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SectionCard title="Carteira por UF" description="Valor total contratado por estado">
