@@ -4,7 +4,7 @@ import { Suspense, useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from "recharts";
-import { FileSignature, Wallet, TrendingUp, Percent } from "lucide-react";
+import { FileSignature, Wallet, TrendingUp, Percent, Home } from "lucide-react";
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
 import { fmtBRL, fmtBRLShort, fmtDate, fmtPct, SERVICE_LINES } from "@/lib/contracts";
@@ -50,6 +50,8 @@ function AtasPage() {
   const totalContratado = atas.reduce((s, c) => s + c.valorContrato, 0);
   const utilizacao = totalAta > 0 ? totalContratado / totalAta : 0;
   const saldo = totalAta - totalContratado;
+  const totalImoveis = atas.reduce((s, c) => s + c.unidades, 0);
+  const contratadoPorImovel = totalImoveis > 0 ? totalContratado / totalImoveis : 0;
 
   const usoData = atas.map((c) => ({
     municipio: `${c.municipio}${c.uf ? " - " + c.uf : ""}`,
@@ -74,25 +76,25 @@ function AtasPage() {
     >
       <FiltersBar contracts={data.contracts} />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KpiCard
           label="Atas vigentes"
           value={String(atas.length)}
           hint="Municípios com ata registrada"
           icon={<FileSignature className="h-4 w-4" />}
+        />
+        <KpiCard
+          label="Contratado até o momento (col I)"
+          value={fmtBRLShort(totalContratado)}
+          hint={fmtBRL(totalContratado)}
+          icon={<TrendingUp className="h-4 w-4" />}
           tone="accent"
         />
         <KpiCard
           label="Valor total das atas"
           value={fmtBRLShort(totalAta)}
-          hint="Teto autorizado para contratação"
-          icon={<Wallet className="h-4 w-4" />}
-        />
-        <KpiCard
-          label="Valor contratado"
-          value={fmtBRLShort(totalContratado)}
           hint={`Saldo disponível: ${fmtBRLShort(saldo)}`}
-          icon={<TrendingUp className="h-4 w-4" />}
+          icon={<Wallet className="h-4 w-4" />}
           tone="success"
         />
         <KpiCard
@@ -100,6 +102,12 @@ function AtasPage() {
           value={fmtPct(utilizacao)}
           hint="Contratado ÷ valor da ata"
           icon={<Percent className="h-4 w-4" />}
+        />
+        <KpiCard
+          label="Contratado / imóvel"
+          value={fmtBRL(contratadoPorImovel)}
+          hint={`${totalImoveis.toLocaleString("pt-BR")} imóveis`}
+          icon={<Home className="h-4 w-4" />}
         />
       </div>
 
