@@ -258,6 +258,8 @@ function buildNovaGestao(row: string[]): Contract | null {
   else if (diasParaVencer <= 30) statusVencimento = "criticos";
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
+  const tas = countAditivosPairs(row, NOVA_TA_PAIRS);
+
   return {
     gestao: "nova",
     numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
@@ -286,6 +288,8 @@ function buildNovaGestao(row: string[]): Contract | null {
       satelite: num(row, NOVA.aero[3]),
     },
     aditivoVigente: { aeroDrone: 0, m360: 0, sigWebLicenca: 0, sigWebMensal: 0 },
+    countAditivos: tas.count,
+    datasAditivos: tas.datas,
     ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
     ticketPorImovel: num(row, NOVA.unidades) > 0 ? valorContrato / num(row, NOVA.unidades) : 0,
     diasParaVencer,
