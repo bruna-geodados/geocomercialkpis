@@ -482,6 +482,8 @@ function buildGestaoAnterior(row: string[]): Contract | null {
   const nRaw = String(row[0] ?? "").trim();
   const unidades = num(row, 32);
 
+  const tas = countAditivosPairs(row, ANT_TA_PAIRS);
+
   return {
     gestao: "anterior",
     numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
@@ -512,6 +514,8 @@ function buildGestaoAnterior(row: string[]): Contract | null {
       sigWebLicenca: num(row, 29),
       sigWebMensal: num(row, 30),
     },
+    countAditivos: tas.count,
+    datasAditivos: tas.datas,
     ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
     ticketPorImovel: unidades > 0 ? valorContrato / unidades : 0,
     diasParaVencer,
