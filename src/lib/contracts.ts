@@ -16,7 +16,7 @@ export type ServiceLine =
   | "Taxa de Lixo";
 
 export interface Contract {
-  gestao: "nova" | "anterior" | "ata";
+  gestao: "nova" | "anterior" | "ata" | "vigente";
   numero: number;
   municipio: string;
   uf: string;
@@ -48,6 +48,10 @@ export interface Contract {
     sigWebLicenca: number;   // AD
     sigWebMensal: number;    // AE
   };
+  // Quantidade de aditivos firmados (TAs com valor preenchido)
+  countAditivos: number;
+  // Datas dos TAs firmados (para timeline)
+  datasAditivos: Date[];
   // Campos calculados
   ticketPorHabitante: number;
   ticketPorImovel: number;
