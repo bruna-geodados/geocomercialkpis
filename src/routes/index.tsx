@@ -135,10 +135,10 @@ function VisaoGeral() {
         <KpiCard label="Vencendo em 90d" value={fmtInt(vencendo90)} icon={<AlertTriangle className="h-4 w-4" />} tone={vencendo90 > 0 ? "warning" : "default"} />
       </div>
 
-      {anteriores.length > 0 && totalAditivoVigente > 0 && (
+      {vigentesAll.length > 0 && totalAditivoVigente > 0 && (
         <SectionCard
           title="Aditivos Vigentes — Gestão Anterior"
-          description="Serviços e sistemas adicionados via aditivo contratual (colunas AB · AC · AD · AE)"
+          description={`${fmtInt(totalTAs)} TAs em ${fmtInt(municipiosComAditivo.length)} contratos · serviços vigentes (colunas AB · AC · AD · AE)`}
           className="border-2 border-accent/40 bg-accent/[0.03] shadow-md"
           action={
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent">
@@ -146,7 +146,19 @@ function VisaoGeral() {
             </span>
           }
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+            <KpiCard
+              label="Contratos c/ aditivo"
+              value={fmtInt(municipiosComAditivo.length)}
+              icon={<FileStack className="h-4 w-4" />}
+              tone="accent"
+            />
+            <KpiCard
+              label="TAs firmados"
+              value={fmtInt(totalTAs)}
+              hint={`média ${(totalTAs / Math.max(vigentesAll.length, 1)).toFixed(1)}/contrato`}
+              icon={<CalendarClock className="h-4 w-4" />}
+            />
             <KpiCard
               label="Aero Drone (aditivo)"
               value={fmtBRLShort(aditivoVigente.aeroDrone)}
@@ -160,15 +172,15 @@ function VisaoGeral() {
               tone="accent"
             />
             <KpiCard
-              label="SIG Web Licença (aditivo)"
+              label="SIG Web Lic. (aditivo)"
               value={fmtBRLShort(aditivoVigente.sigWebLicenca)}
               hint={fmtBRL(aditivoVigente.sigWebLicenca)}
               tone="accent"
             />
             <KpiCard
-              label="SIG Web/Mensal (aditivo)"
+              label="SIG Web/Mensal (MRR)"
               value={fmtBRLShort(aditivoVigente.sigWebMensal)}
-              hint={fmtBRL(aditivoVigente.sigWebMensal)}
+              hint={`${fmtBRL(aditivoVigente.sigWebMensal)} · 12m ${fmtBRLShort(aditivoVigente.sigWebMensal * 12)}`}
               tone="success"
             />
           </div>
@@ -177,6 +189,8 @@ function VisaoGeral() {
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b">
                   <th className="py-2 pr-4">Município</th>
+                  <th className="py-2 pr-4 text-right">Nº TAs</th>
+                  <th className="py-2 pr-4">Vencimento</th>
                   <th className="py-2 pr-4 text-right">Aero Drone (AB)</th>
                   <th className="py-2 pr-4 text-right">360º (AC)</th>
                   <th className="py-2 pr-4 text-right">SIG Web Lic. (AD)</th>
@@ -196,9 +210,21 @@ function VisaoGeral() {
                   }))
                   .sort((a, b) => b.total - a.total)
                   .map(({ c, total }) => (
-                    <tr key={`adv-${c.numero}-${c.municipio}`} className="border-b border-border/40 hover:bg-accent/[0.04]">
+                    <tr key={`adv-${c.numero}-${c.municipio}-${c.contrato}`} className="border-b border-border/40 hover:bg-accent/[0.04]">
                       <td className="py-2.5 pr-4 font-medium">
                         {c.municipio} <span className="text-muted-foreground">{c.uf}</span>
+                        <div className="text-[11px] text-muted-foreground font-normal">{c.contrato}</div>
+                      </td>
+                      <td className="py-2.5 pr-4 text-right tabular-nums font-semibold">
+                        {c.countAditivos}
+                      </td>
+                      <td className="py-2.5 pr-4 text-muted-foreground">
+                        {fmtDate(c.vencimento)}
+                        {c.diasParaVencer >= 0 && c.diasParaVencer <= 90 && (
+                          <span className="ml-1.5 text-[10px] uppercase text-[oklch(0.72_0.16_70)]">
+                            {c.diasParaVencer}d
+                          </span>
+                        )}
                       </td>
                       <td className="py-2.5 pr-4 text-right tabular-nums">
                         {c.aditivoVigente.aeroDrone > 0 ? fmtBRL(c.aditivoVigente.aeroDrone) : "—"}
@@ -219,7 +245,7 @@ function VisaoGeral() {
                   ))}
                 {municipiosComAditivo.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="py-8 text-center text-muted-foreground">
                       Nenhum aditivo vigente nesta seleção.
                     </td>
                   </tr>
