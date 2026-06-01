@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import {
-  Briefcase, DollarSign, TrendingUp, AlertTriangle, Home, Percent, Sparkles,
+  Briefcase, DollarSign, TrendingUp, AlertTriangle, Home, Percent, Sparkles, FileStack, CalendarClock,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
-import { fmtBRL, fmtBRLShort, fmtInt, fmtPct, SERVICE_LINES } from "@/lib/contracts";
+import { fmtBRL, fmtBRLShort, fmtInt, fmtPct, fmtDate, SERVICE_LINES } from "@/lib/contracts";
 import { PageShell } from "@/components/page-shell";
 import { KpiCard } from "@/components/kpi-card";
 import { FiltersBar } from "@/components/filters-bar";
@@ -58,16 +58,21 @@ function VisaoGeral() {
   const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
   const valorPorImovel = totalImoveis > 0 ? totalValor / totalImoveis : 0;
 
-  // Aditivos vigentes — somente Gestão Anterior tem essas colunas (AB-AE)
-  const anteriores = contracts.filter((c) => c.gestao === "anterior");
+  // Aditivos vigentes — fonte primária: aba "Gestão anterior - Aditivos vigentes"
+  // Aplica filtros (UF/busca/ano) sem restringir por gestão, para o destaque
+  // refletir sempre o setor de aditivos vigentes.
+  const vigentesAll = useMemo(
+    () => applyFilters(data.contracts, { ...filters, gestao: "vigente" }),
+    [data, filters],
+  );
   const aditivoVigente = {
-    aeroDrone: anteriores.reduce((s, c) => s + c.aditivoVigente.aeroDrone, 0),
-    m360: anteriores.reduce((s, c) => s + c.aditivoVigente.m360, 0),
-    sigWebLicenca: anteriores.reduce(
+    aeroDrone: vigentesAll.reduce((s, c) => s + c.aditivoVigente.aeroDrone, 0),
+    m360: vigentesAll.reduce((s, c) => s + c.aditivoVigente.m360, 0),
+    sigWebLicenca: vigentesAll.reduce(
       (s, c) => s + c.aditivoVigente.sigWebLicenca,
       0,
     ),
-    sigWebMensal: anteriores.reduce(
+    sigWebMensal: vigentesAll.reduce(
       (s, c) => s + c.aditivoVigente.sigWebMensal,
       0,
     ),
@@ -77,7 +82,8 @@ function VisaoGeral() {
     aditivoVigente.m360 +
     aditivoVigente.sigWebLicenca +
     aditivoVigente.sigWebMensal;
-  const municipiosComAditivo = anteriores.filter(
+  const totalTAs = vigentesAll.reduce((s, c) => s + c.countAditivos, 0);
+  const municipiosComAditivo = vigentesAll.filter(
     (c) =>
       c.aditivoVigente.aeroDrone +
         c.aditivoVigente.m360 +
