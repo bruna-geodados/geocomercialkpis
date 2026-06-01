@@ -531,6 +531,100 @@ export function parseSheet(
   values: string[][],
   gestao: "nova" | "anterior" | "ata" | "vigente",
 ): Contract[] {
+  // ============================================================
+  // Inline: Aditivos Vigentes (tab "Gestão anterior - Aditivos vigentes")
+  // 31 cols. Foco em AB-AE (índices 27-30) + count de TAs (7 pares) e
+  // vencimento atualizado (X = 23).
+  // ============================================================
+  function buildAditivosVigentes(row: string[]): Contract | null {
+    if (!row || !row[1]) return null;
+    const { municipio, uf } = splitMunicipio(row[1]);
+    if (!municipio) return null;
+    const valorContrato = num(row, 8);
+    const aeroDrone = num(row, 27);
+    const m360 = num(row, 28);
+    const sigWebLic = num(row, 29);
+    const sigWebMensal = num(row, 30);
+    const totalVig = aeroDrone + m360 + sigWebLic + sigWebMensal;
+    if (totalVig <= 0 && valorContrato <= 0) return null;
+
+    const dataContrato = parseSheetDate(row[4]);
+    const vigenciaInicial = parseSheetDate(row[5]);
+    const vencimento = parseSheetDate(row[23]);
+    const populacao = num(row, 2);
+    const valorAditivado = num(row, 24);
+    const percAdit = num(row, 25);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diasParaVencer = vencimento
+      ? Math.round((vencimento.getTime() - today.getTime()) / 86400000)
+      : 99999;
+    let statusVencimento: Contract["statusVencimento"] = "saudavel";
+    if (diasParaVencer < 0) statusVencimento = "vencido";
+    else if (diasParaVencer <= 30) statusVencimento = "criticos";
+    else if (diasParaVencer <= 90) statusVencimento = "atencao";
+
+    const tas = countAditivosPairs(row, ANT_TA_PAIRS);
+    const nRaw = String(row[0] ?? "").trim();
+
+    const receitaPorLinha: Record<ServiceLine, number> = {
+      "Aerolevantamento": aeroDrone,
+      "Mapeamento 360º": m360,
+      "Atualização Permanente": 0,
+      "Cadastro Multifinalitário": 0,
+      "PVG / Tributário": 0,
+      "Endereçamento Postal": 0,
+      "SIG - Implantação": 0,
+      "SIG - Licenças": sigWebLic,
+      "SIG - Mensal (MRR)": sigWebMensal,
+      "Desenvolvimento & Custom": 0,
+      "Taxa de Lixo": 0,
+    };
+
+    return {
+      gestao: "vigente",
+      numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
+      municipio,
+      uf,
+      populacao,
+      contrato: String(row[3] ?? "").trim(),
+      dataContrato,
+      vigenciaInicial,
+      vencimento,
+      valorAta: num(row, 7),
+      valorContrato,
+      valorAditivosMax: num(row, 26),
+      valorAditivado,
+      percentualAditivado: percAdit > 1 ? percAdit / 100 : percAdit,
+      areaKm2: 0,
+      unidades: 0,
+      receitaPorLinha,
+      aero: { drone: aeroDrone, tripulado: 0, valorKm2: 0, satelite: 0 },
+      aditivoVigente: {
+        aeroDrone,
+        m360,
+        sigWebLicenca: sigWebLic,
+        sigWebMensal,
+      },
+      countAditivos: tas.count,
+      datasAditivos: tas.datas,
+      ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
+      ticketPorImovel: 0,
+      diasParaVencer,
+      statusVencimento,
+      mrrSig: sigWebMensal,
+      mrrSigWeb: sigWebMensal,
+      contratosSig: sigWebLic > 0 ? 1 : 0,
+      sigBreakdown: SIG_MODULES.map((modulo) => ({
+        modulo,
+        implantacao: 0,
+        licenca: modulo === "Web" ? sigWebLic : 0,
+        mensal: modulo === "Web" ? sigWebMensal : 0,
+      })),
+    };
+  }
+
   const builder =
     gestao === "nova"
       ? buildNovaGestao
