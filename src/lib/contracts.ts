@@ -16,7 +16,7 @@ export type ServiceLine =
   | "Taxa de Lixo";
 
 export interface Contract {
-  gestao: "nova" | "anterior" | "ata";
+  gestao: "nova" | "anterior" | "ata" | "vigente";
   numero: number;
   municipio: string;
   uf: string;
@@ -48,6 +48,10 @@ export interface Contract {
     sigWebLicenca: number;   // AD
     sigWebMensal: number;    // AE
   };
+  // Quantidade de aditivos firmados (TAs com valor preenchido)
+  countAditivos: number;
+  // Datas dos TAs firmados (para timeline)
+  datasAditivos: Date[];
   // Campos calculados
   ticketPorHabitante: number;
   ticketPorImovel: number;
@@ -115,6 +119,30 @@ function num(row: string[], i: number): number {
 function sumIndexes(row: string[], indexes: number[]): number {
   return indexes.reduce((acc, i) => acc + num(row, i), 0);
 }
+
+/** Counts aditivos firmados — pairs of (date, value); valor > 0 ⇒ firmado. */
+function countAditivosPairs(
+  row: string[],
+  pairs: Array<[number, number]>,
+): { count: number; datas: Date[] } {
+  const datas: Date[] = [];
+  let count = 0;
+  for (const [dateIdx, valueIdx] of pairs) {
+    const valor = num(row, valueIdx);
+    const dt = parseSheetDate(row[dateIdx]);
+    if (valor > 0 || dt) {
+      count += 1;
+      if (dt) datas.push(dt);
+    }
+  }
+  return { count, datas };
+}
+
+const NOVA_TA_PAIRS: Array<[number, number]> = [[9, 10], [11, 12]];
+const ATA_TA_PAIRS: Array<[number, number]> = [[10, 11], [12, 13]];
+const ANT_TA_PAIRS: Array<[number, number]> = [
+  [9, 10], [11, 12], [13, 14], [15, 16], [17, 18], [19, 20], [21, 22],
+];
 
 // --- Column indexes (0-based), derived from row 2 of the sheet ---
 // ============================================================
@@ -230,6 +258,8 @@ function buildNovaGestao(row: string[]): Contract | null {
   else if (diasParaVencer <= 30) statusVencimento = "criticos";
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
+  const tas = countAditivosPairs(row, NOVA_TA_PAIRS);
+
   return {
     gestao: "nova",
     numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
@@ -258,6 +288,8 @@ function buildNovaGestao(row: string[]): Contract | null {
       satelite: num(row, NOVA.aero[3]),
     },
     aditivoVigente: { aeroDrone: 0, m360: 0, sigWebLicenca: 0, sigWebMensal: 0 },
+    countAditivos: tas.count,
+    datasAditivos: tas.datas,
     ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
     ticketPorImovel: num(row, NOVA.unidades) > 0 ? valorContrato / num(row, NOVA.unidades) : 0,
     diasParaVencer,
@@ -324,6 +356,8 @@ function buildAta(row: string[]): Contract | null {
   else if (diasParaVencer <= 30) statusVencimento = "criticos";
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
+  const tas = countAditivosPairs(row, ATA_TA_PAIRS);
+
   return {
     gestao: "ata",
     numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
@@ -352,6 +386,8 @@ function buildAta(row: string[]): Contract | null {
       satelite: num(row, ATA.aero[3]),
     },
     aditivoVigente: { aeroDrone: 0, m360: 0, sigWebLicenca: 0, sigWebMensal: 0 },
+    countAditivos: tas.count,
+    datasAditivos: tas.datas,
     ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
     ticketPorImovel: num(row, ATA.unidades) > 0 ? valorContrato / num(row, ATA.unidades) : 0,
     diasParaVencer,
@@ -446,6 +482,8 @@ function buildGestaoAnterior(row: string[]): Contract | null {
   const nRaw = String(row[0] ?? "").trim();
   const unidades = num(row, 32);
 
+  const tas = countAditivosPairs(row, ANT_TA_PAIRS);
+
   return {
     gestao: "anterior",
     numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
@@ -476,6 +514,8 @@ function buildGestaoAnterior(row: string[]): Contract | null {
       sigWebLicenca: num(row, 29),
       sigWebMensal: num(row, 30),
     },
+    countAditivos: tas.count,
+    datasAditivos: tas.datas,
     ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
     ticketPorImovel: unidades > 0 ? valorContrato / unidades : 0,
     diasParaVencer,
@@ -489,14 +529,110 @@ function buildGestaoAnterior(row: string[]): Contract | null {
 
 export function parseSheet(
   values: string[][],
-  gestao: "nova" | "anterior" | "ata",
+  gestao: "nova" | "anterior" | "ata" | "vigente",
 ): Contract[] {
+  // ============================================================
+  // Inline: Aditivos Vigentes (tab "Gestão anterior - Aditivos vigentes")
+  // 31 cols. Foco em AB-AE (índices 27-30) + count de TAs (7 pares) e
+  // vencimento atualizado (X = 23).
+  // ============================================================
+  function buildAditivosVigentes(row: string[]): Contract | null {
+    if (!row || !row[1]) return null;
+    const { municipio, uf } = splitMunicipio(row[1]);
+    if (!municipio) return null;
+    const valorContrato = num(row, 8);
+    const aeroDrone = num(row, 27);
+    const m360 = num(row, 28);
+    const sigWebLic = num(row, 29);
+    const sigWebMensal = num(row, 30);
+    const totalVig = aeroDrone + m360 + sigWebLic + sigWebMensal;
+    if (totalVig <= 0 && valorContrato <= 0) return null;
+
+    const dataContrato = parseSheetDate(row[4]);
+    const vigenciaInicial = parseSheetDate(row[5]);
+    const vencimento = parseSheetDate(row[23]);
+    const populacao = num(row, 2);
+    const valorAditivado = num(row, 24);
+    const percAdit = num(row, 25);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diasParaVencer = vencimento
+      ? Math.round((vencimento.getTime() - today.getTime()) / 86400000)
+      : 99999;
+    let statusVencimento: Contract["statusVencimento"] = "saudavel";
+    if (diasParaVencer < 0) statusVencimento = "vencido";
+    else if (diasParaVencer <= 30) statusVencimento = "criticos";
+    else if (diasParaVencer <= 90) statusVencimento = "atencao";
+
+    const tas = countAditivosPairs(row, ANT_TA_PAIRS);
+    const nRaw = String(row[0] ?? "").trim();
+
+    const receitaPorLinha: Record<ServiceLine, number> = {
+      "Aerolevantamento": aeroDrone,
+      "Mapeamento 360º": m360,
+      "Atualização Permanente": 0,
+      "Cadastro Multifinalitário": 0,
+      "PVG / Tributário": 0,
+      "Endereçamento Postal": 0,
+      "SIG - Implantação": 0,
+      "SIG - Licenças": sigWebLic,
+      "SIG - Mensal (MRR)": sigWebMensal,
+      "Desenvolvimento & Custom": 0,
+      "Taxa de Lixo": 0,
+    };
+
+    return {
+      gestao: "vigente",
+      numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
+      municipio,
+      uf,
+      populacao,
+      contrato: String(row[3] ?? "").trim(),
+      dataContrato,
+      vigenciaInicial,
+      vencimento,
+      valorAta: num(row, 7),
+      valorContrato,
+      valorAditivosMax: num(row, 26),
+      valorAditivado,
+      percentualAditivado: percAdit > 1 ? percAdit / 100 : percAdit,
+      areaKm2: 0,
+      unidades: 0,
+      receitaPorLinha,
+      aero: { drone: aeroDrone, tripulado: 0, valorKm2: 0, satelite: 0 },
+      aditivoVigente: {
+        aeroDrone,
+        m360,
+        sigWebLicenca: sigWebLic,
+        sigWebMensal,
+      },
+      countAditivos: tas.count,
+      datasAditivos: tas.datas,
+      ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
+      ticketPorImovel: 0,
+      diasParaVencer,
+      statusVencimento,
+      mrrSig: sigWebMensal,
+      mrrSigWeb: sigWebMensal,
+      contratosSig: sigWebLic > 0 ? 1 : 0,
+      sigBreakdown: SIG_MODULES.map((modulo) => ({
+        modulo,
+        implantacao: 0,
+        licenca: modulo === "Web" ? sigWebLic : 0,
+        mensal: modulo === "Web" ? sigWebMensal : 0,
+      })),
+    };
+  }
+
   const builder =
     gestao === "nova"
       ? buildNovaGestao
       : gestao === "ata"
         ? buildAta
-        : buildGestaoAnterior;
+        : gestao === "vigente"
+          ? buildAditivosVigentes
+          : buildGestaoAnterior;
   return values
     .slice(2)
     .map((r) => builder(r))
