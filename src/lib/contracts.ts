@@ -120,6 +120,30 @@ function sumIndexes(row: string[], indexes: number[]): number {
   return indexes.reduce((acc, i) => acc + num(row, i), 0);
 }
 
+/** Counts aditivos firmados — pairs of (date, value); valor > 0 ⇒ firmado. */
+function countAditivosPairs(
+  row: string[],
+  pairs: Array<[number, number]>,
+): { count: number; datas: Date[] } {
+  const datas: Date[] = [];
+  let count = 0;
+  for (const [dateIdx, valueIdx] of pairs) {
+    const valor = num(row, valueIdx);
+    const dt = parseSheetDate(row[dateIdx]);
+    if (valor > 0 || dt) {
+      count += 1;
+      if (dt) datas.push(dt);
+    }
+  }
+  return { count, datas };
+}
+
+const NOVA_TA_PAIRS: Array<[number, number]> = [[9, 10], [11, 12]];
+const ATA_TA_PAIRS: Array<[number, number]> = [[10, 11], [12, 13]];
+const ANT_TA_PAIRS: Array<[number, number]> = [
+  [9, 10], [11, 12], [13, 14], [15, 16], [17, 18], [19, 20], [21, 22],
+];
+
 // --- Column indexes (0-based), derived from row 2 of the sheet ---
 // ============================================================
 // Nova gestão tab (72 cols) — Valor da Ata column removed
