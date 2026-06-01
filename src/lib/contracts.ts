@@ -529,14 +529,16 @@ function buildGestaoAnterior(row: string[]): Contract | null {
 
 export function parseSheet(
   values: string[][],
-  gestao: "nova" | "anterior" | "ata",
+  gestao: "nova" | "anterior" | "ata" | "vigente",
 ): Contract[] {
   const builder =
     gestao === "nova"
       ? buildNovaGestao
       : gestao === "ata"
         ? buildAta
-        : buildGestaoAnterior;
+        : gestao === "vigente"
+          ? buildAditivosVigentes
+          : buildGestaoAnterior;
   return values
     .slice(2)
     .map((r) => builder(r))
