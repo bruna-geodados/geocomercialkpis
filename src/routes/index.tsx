@@ -114,7 +114,7 @@ function VisaoGeral() {
   }, [contracts]);
 
   const topMunicipios = useMemo(
-    () => [...contracts].sort((a, b) => b.valorContrato - a.valorContrato).slice(0, 10),
+    () => [...contracts].sort((a, b) => b.valorContrato - a.valorContrato),
     [contracts],
   );
 
