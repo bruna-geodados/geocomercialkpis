@@ -50,8 +50,7 @@ function Receita() {
           valor: c.receitaPorLinha[linhaSelecionada],
         }))
         .filter((r) => r.valor > 0)
-        .sort((a, b) => b.valor - a.valor)
-        .slice(0, 15),
+        .sort((a, b) => b.valor - a.valor),
     [contracts, linhaSelecionada],
   );
 
