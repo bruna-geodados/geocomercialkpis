@@ -135,7 +135,7 @@ function VisaoGeral() {
         <KpiCard label="Vencendo em 90d" value={fmtInt(vencendo90)} icon={<AlertTriangle className="h-4 w-4" />} tone={vencendo90 > 0 ? "warning" : "default"} />
       </div>
 
-      {vigentesAll.length > 0 && totalAditivoVigente > 0 && (
+      {filters.gestao === "vigente" && vigentesAll.length > 0 && totalAditivoVigente > 0 && (
         <SectionCard
           title="Aditivos Vigentes — Gestão Anterior"
           description={`${fmtInt(totalTAs)} TAs em ${fmtInt(municipiosComAditivo.length)} contratos · serviços vigentes (colunas AB · AC · AD · AE)`}
