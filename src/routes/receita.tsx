@@ -97,7 +97,7 @@ function Receita() {
 
       <SectionCard
         title="Ranking de Municípios por Linha"
-        description={`Top 15 em "${linhaSelecionada}"`}
+        description={`${rankingMunicipios.length} municípios em "${linhaSelecionada}"`}
         action={
           <div className="flex flex-wrap gap-1 max-w-[60%] justify-end">
             {SERVICE_LINES.map((l) => (
