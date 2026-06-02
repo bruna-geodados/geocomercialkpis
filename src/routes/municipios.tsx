@@ -111,8 +111,10 @@ function Municipios() {
                   <th className="py-2 pr-4">Município</th>
                   <th className="py-2 pr-4">UF</th>
                   <th className="py-2 pr-4 text-right">Pop.</th>
+                  <th className="py-2 pr-4 text-right">Imóveis</th>
                   <th className="py-2 pr-4 text-right">Valor</th>
                   <th className="py-2 pr-4 text-right">R$/hab</th>
+                  <th className="py-2 pr-4 text-right">R$/imóvel</th>
                 </tr>
               </thead>
               <tbody>
@@ -125,9 +127,13 @@ function Municipios() {
                     <td className="py-2 pr-4 font-medium">{c.municipio}</td>
                     <td className="py-2 pr-4 text-muted-foreground">{c.uf}</td>
                     <td className="py-2 pr-4 text-right tabular-nums">{fmtInt(c.populacao)}</td>
+                    <td className="py-2 pr-4 text-right tabular-nums">{fmtInt(c.unidades)}</td>
                     <td className="py-2 pr-4 text-right tabular-nums">{fmtBRLShort(c.valorContrato)}</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-muted-foreground">
                       {c.ticketPorHabitante > 0 ? fmtBRL(c.ticketPorHabitante) : "—"}
+                    </td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-muted-foreground">
+                      {c.unidades > 0 ? fmtBRL(c.valorContrato / c.unidades) : "—"}
                     </td>
                   </tr>
                 ))}
