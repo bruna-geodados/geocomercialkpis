@@ -50,8 +50,7 @@ function Receita() {
           valor: c.receitaPorLinha[linhaSelecionada],
         }))
         .filter((r) => r.valor > 0)
-        .sort((a, b) => b.valor - a.valor)
-        .slice(0, 15),
+        .sort((a, b) => b.valor - a.valor),
     [contracts, linhaSelecionada],
   );
 
@@ -98,7 +97,7 @@ function Receita() {
 
       <SectionCard
         title="Ranking de Municípios por Linha"
-        description={`Top 15 em "${linhaSelecionada}"`}
+        description={`${rankingMunicipios.length} municípios em "${linhaSelecionada}"`}
         action={
           <div className="flex flex-wrap gap-1 max-w-[60%] justify-end">
             {SERVICE_LINES.map((l) => (
@@ -120,9 +119,9 @@ function Receita() {
             Nenhum município com receita nesta linha.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead>
+              <thead className="sticky top-0 bg-card z-10">
                 <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b">
                   <th className="py-2 pr-4 w-8">#</th>
                   <th className="py-2 pr-4">Município</th>
