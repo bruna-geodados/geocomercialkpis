@@ -298,16 +298,18 @@ function VisaoGeral() {
         </SectionCard>
       </div>
 
-      <SectionCard title="Top 10 Municípios por Valor de Contrato">
-        <div className="overflow-x-auto">
+      <SectionCard title={`Municípios por Valor de Contrato (${fmtInt(topMunicipios.length)})`}>
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead>
+            <thead className="sticky top-0 bg-card z-10">
               <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b">
                 <th className="py-2 pr-4">Município</th>
                 <th className="py-2 pr-4">UF</th>
                 <th className="py-2 pr-4 text-right">População</th>
+                <th className="py-2 pr-4 text-right">Imóveis</th>
                 <th className="py-2 pr-4 text-right">Valor</th>
                 <th className="py-2 pr-4 text-right">R$/hab</th>
+                <th className="py-2 pr-4 text-right">R$/imóvel</th>
                 <th className="py-2 pr-4 text-right">% Aditivado</th>
                 <th className="py-2 pr-4">Vencimento</th>
               </tr>
@@ -318,9 +320,13 @@ function VisaoGeral() {
                   <td className="py-2.5 pr-4 font-medium">{c.municipio}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground">{c.uf}</td>
                   <td className="py-2.5 pr-4 text-right tabular-nums">{fmtInt(c.populacao)}</td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums">{fmtInt(c.unidades)}</td>
                   <td className="py-2.5 pr-4 text-right tabular-nums font-medium">{fmtBRLShort(c.valorContrato)}</td>
                   <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
                     {c.ticketPorHabitante > 0 ? fmtBRL(c.ticketPorHabitante) : "—"}
+                  </td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
+                    {c.unidades > 0 ? fmtBRL(c.valorContrato / c.unidades) : "—"}
                   </td>
                   <td className="py-2.5 pr-4 text-right tabular-nums">{fmtPct(c.percentualAditivado)}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground">
