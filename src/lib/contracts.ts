@@ -219,7 +219,10 @@ function buildNovaGestao(row: string[]): Contract | null {
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
   const vencimento =
-    parseSheetDate(row[NOVA.vencimento]) ?? parseSheetDate(row[10]);
+    parseSheetDate(row[NOVA.vencimento]) ??
+    parseSheetDate(row[13]) ??
+    parseSheetDate(row[11]) ??
+    parseSheetDate(row[9]);
 
   const populacao = num(row, 2);
 
