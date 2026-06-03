@@ -138,7 +138,7 @@ function countAditivosPairs(
   return { count, datas };
 }
 
-const NOVA_TA_PAIRS: Array<[number, number]> = [[9, 10], [11, 12]];
+const NOVA_TA_PAIRS: Array<[number, number]> = [[9, 10], [11, 12], [13, 14]];
 const ATA_TA_PAIRS: Array<[number, number]> = [[10, 11], [12, 13]];
 const ANT_TA_PAIRS: Array<[number, number]> = [
   [9, 10], [11, 12], [13, 14], [15, 16], [17, 18], [19, 20], [21, 22],
@@ -146,38 +146,38 @@ const ANT_TA_PAIRS: Array<[number, number]> = [
 
 // --- Column indexes (0-based), derived from row 2 of the sheet ---
 // ============================================================
-// Nova gestão tab (72 cols) — Valor da Ata column removed
+// Nova gestão tab (74 cols) — 3 TA columns (added 3º TA)
 // ============================================================
 // 0 Nº | 1 Município | 2 População | 3 Contrato | 4 Data | 5 Vigência inicial
 // 6 Projeção | 7 Valor do contrato | 8 Valor máx aditivos
-// 9 1º TA | 11 2º TA | 13 Vencimento atualizado
-// 14 Valor aditivado | 15 % Aditivado | 16 Valor máx aditivos
-// 17 Área km² | 18 Unidades
-// 19 Aero drone | 20 Aero tripulado | 21 Aero Valor km² | 22 Satélite
-// 23 360º | 24 Atualização permanente
-// 25..35 Cadastro Multifinalitário (11 cols)
-// 36..39 PVG/Tributário | 40..41 Endereçamento
-// 42..49 SIG Implantação | 50..57 SIG Licença | 58..65 SIG /Mensal
-// 66..70 Desenvolvimento & Custom | 71 Taxa de Lixo
+// 9/10 1º TA | 11/12 2º TA | 13/14 3º TA | 15 Vencimento atualizado
+// 16 Valor aditivado | 17 % Aditivado | 18 Valor máx aditivos
+// 19 Área km² | 20 Unidades
+// 21..24 Aero (drone, tripulado, km², satélite)
+// 25 360º | 26 Atualização permanente
+// 27..37 Cadastro Multifinalitário (11 cols)
+// 38..41 PVG/Tributário | 42..43 Endereçamento
+// 44..51 SIG Implantação | 52..59 SIG Licença | 60..67 SIG /Mensal
+// 68..72 Desenvolvimento & Custom | 73 Taxa de Lixo
 const NOVA = {
   valorContrato: 7,
   maxAdit: 8,
-  vencimento: 13,
-  aditivado: 14,
-  percAdit: 15,
-  area: 17,
-  unidades: 18,
-  aero: [19, 20, 21, 22],
-  m360: 23,
-  atualPerm: 24,
-  cadastro: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35],
-  pvg: [36, 37, 38, 39],
-  endereco: [40, 41],
-  sigImpl: [42, 43, 44, 45, 46, 47, 48, 49],
-  sigLic: [50, 51, 52, 53, 54, 55, 56, 57],
-  sigMensal: [58, 59, 60, 61, 62, 63, 64, 65],
-  dev: [66, 67, 68, 69, 70],
-  taxaLixo: 71,
+  vencimento: 15,
+  aditivado: 16,
+  percAdit: 17,
+  area: 19,
+  unidades: 20,
+  aero: [21, 22, 23, 24],
+  m360: 25,
+  atualPerm: 26,
+  cadastro: [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37],
+  pvg: [38, 39, 40, 41],
+  endereco: [42, 43],
+  sigImpl: [44, 45, 46, 47, 48, 49, 50, 51],
+  sigLic: [52, 53, 54, 55, 56, 57, 58, 59],
+  sigMensal: [60, 61, 62, 63, 64, 65, 66, 67],
+  dev: [68, 69, 70, 71, 72],
+  taxaLixo: 73,
 } as const;
 
 // ============================================================
