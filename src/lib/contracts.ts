@@ -138,7 +138,7 @@ function countAditivosPairs(
   return { count, datas };
 }
 
-const NOVA_TA_PAIRS: Array<[number, number]> = [[9, 10], [11, 12], [13, 14]];
+const NOVA_TA_PAIRS: Array<[number, number]> = [[8, 9], [10, 11], [12, 13]];
 const ATA_TA_PAIRS: Array<[number, number]> = [[10, 11], [12, 13]];
 const ANT_TA_PAIRS: Array<[number, number]> = [
   [9, 10], [11, 12], [13, 14], [15, 16], [17, 18], [19, 20], [21, 22],
@@ -146,38 +146,40 @@ const ANT_TA_PAIRS: Array<[number, number]> = [
 
 // --- Column indexes (0-based), derived from row 2 of the sheet ---
 // ============================================================
-// Nova gestão tab (74 cols) — 3 TA columns (added 3º TA)
+// Nova gestão tab — 3 TA columns. A coluna "Valor máximo aditivos (25%)"
+// que ficava logo após "Valor do contrato" foi removida da planilha, então
+// todos os índices a partir de 8 deslocam -1 em relação à versão anterior.
 // ============================================================
 // 0 Nº | 1 Município | 2 População | 3 Contrato | 4 Data | 5 Vigência inicial
-// 6 Projeção | 7 Valor do contrato | 8 Valor máx aditivos
-// 9/10 1º TA | 11/12 2º TA | 13/14 3º TA | 15 Vencimento atualizado
-// 16 Valor aditivado | 17 % Aditivado | 18 Valor máx aditivos
-// 19 Área km² | 20 Unidades
-// 21..24 Aero (drone, tripulado, km², satélite)
-// 25 360º | 26 Atualização permanente
-// 27..37 Cadastro Multifinalitário (11 cols)
-// 38..41 PVG/Tributário | 42..43 Endereçamento
-// 44..51 SIG Implantação | 52..59 SIG Licença | 60..67 SIG /Mensal
-// 68..72 Desenvolvimento & Custom | 73 Taxa de Lixo
+// 6 Projeção | 7 Valor do contrato
+// 8/9 1º TA | 10/11 2º TA | 12/13 3º TA | 14 Vencimento atualizado
+// 15 Valor aditivado | 16 % Aditivado | 17 Valor máx aditivos (25%)
+// 18 Área km² | 19 Unidades
+// 20..23 Aero (drone, tripulado, km², satélite)
+// 24 360º | 25 Atualização permanente
+// 26..36 Cadastro Multifinalitário (11 cols)
+// 37..40 PVG/Tributário | 41..42 Endereçamento
+// 43..50 SIG Implantação | 51..58 SIG Licença | 59..66 SIG /Mensal
+// 67..71 Desenvolvimento & Custom | 72 Taxa de Lixo
 const NOVA = {
   valorContrato: 7,
-  maxAdit: 8,
-  vencimento: 15,
-  aditivado: 16,
-  percAdit: 17,
-  area: 19,
-  unidades: 20,
-  aero: [21, 22, 23, 24],
-  m360: 25,
-  atualPerm: 26,
-  cadastro: [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37],
-  pvg: [38, 39, 40, 41],
-  endereco: [42, 43],
-  sigImpl: [44, 45, 46, 47, 48, 49, 50, 51],
-  sigLic: [52, 53, 54, 55, 56, 57, 58, 59],
-  sigMensal: [60, 61, 62, 63, 64, 65, 66, 67],
-  dev: [68, 69, 70, 71, 72],
-  taxaLixo: 73,
+  maxAdit: 17,
+  vencimento: 14,
+  aditivado: 15,
+  percAdit: 16,
+  area: 18,
+  unidades: 19,
+  aero: [20, 21, 22, 23],
+  m360: 24,
+  atualPerm: 25,
+  cadastro: [26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
+  pvg: [37, 38, 39, 40],
+  endereco: [41, 42],
+  sigImpl: [43, 44, 45, 46, 47, 48, 49, 50],
+  sigLic: [51, 52, 53, 54, 55, 56, 57, 58],
+  sigMensal: [59, 60, 61, 62, 63, 64, 65, 66],
+  dev: [67, 68, 69, 70, 71],
+  taxaLixo: 72,
 } as const;
 
 // ============================================================
@@ -220,9 +222,9 @@ function buildNovaGestao(row: string[]): Contract | null {
   const vigenciaInicial = parseSheetDate(row[5]);
   const vencimento =
     parseSheetDate(row[NOVA.vencimento]) ??
-    parseSheetDate(row[13]) ??
-    parseSheetDate(row[11]) ??
-    parseSheetDate(row[9]);
+    parseSheetDate(row[12]) ??
+    parseSheetDate(row[10]) ??
+    parseSheetDate(row[8]);
 
   const populacao = num(row, 2);
 
