@@ -139,9 +139,11 @@ function countAditivosPairs(
 }
 
 const NOVA_TA_PAIRS: Array<[number, number]> = [[8, 9], [10, 11], [12, 13]];
-const ATA_TA_PAIRS: Array<[number, number]> = [[10, 11], [12, 13]];
+const ATA_TA_PAIRS: Array<[number, number]> = [[9, 10], [11, 12]];
+// "Aditivos vigentes" tab has 8 TA pairs (cols J..Y → indices 9..24)
 const ANT_TA_PAIRS: Array<[number, number]> = [
-  [9, 10], [11, 12], [13, 14], [15, 16], [17, 18], [19, 20], [21, 22],
+  [9, 10], [11, 12], [13, 14], [15, 16],
+  [17, 18], [19, 20], [21, 22], [23, 24],
 ];
 
 // --- Column indexes (0-based), derived from row 2 of the sheet ---
@@ -152,61 +154,63 @@ const ANT_TA_PAIRS: Array<[number, number]> = [
 // ============================================================
 // 0 Nº | 1 Município | 2 População | 3 Contrato | 4 Data | 5 Vigência inicial
 // 6 Projeção | 7 Valor do contrato
-// 8/9 1º TA | 10/11 2º TA | 12/13 3º TA | 14 Vencimento atualizado
-// 15 Valor aditivado | 16 % Aditivado | 17 Valor máx aditivos (25%)
-// 18 Área km² | 19 Unidades
-// 20..23 Aero (drone, tripulado, km², satélite)
-// 24 360º | 25 Atualização permanente
-// 26..36 Cadastro Multifinalitário (11 cols)
-// 37..40 PVG/Tributário | 41..42 Endereçamento
-// 43..50 SIG Implantação | 51..58 SIG Licença | 59..66 SIG /Mensal
-// 67..71 Desenvolvimento & Custom | 72 Taxa de Lixo
+// 8/9 1º TA | 10/11 2º TA | 12/13 3º TA
+// 14 Vencimento atualizado | 15 Valor aditivado
+// 16 Assinado Geodados | 17 Assinado Prefeitura
+// 18 % Aditivado | 19 Valor máx aditivos (25%)
+// 20 Área km² | 21 Unidades
+// 22..25 Aero (drone, tripulado, km², satélite)
+// 26 360º | 27 Atualização permanente
+// 28..38 Cadastro Multifinalitário (11 cols)
+// 39..42 PVG/Tributário | 43..44 Endereçamento
+// 45..52 SIG Implantação | 53..60 SIG Licença | 61..68 SIG /Mensal
+// 69..73 Desenvolvimento & Custom | 74 Taxa de Lixo
 const NOVA = {
   valorContrato: 7,
-  maxAdit: 17,
+  maxAdit: 19,
   vencimento: 14,
   aditivado: 15,
-  percAdit: 16,
-  area: 18,
-  unidades: 19,
-  aero: [20, 21, 22, 23],
-  m360: 24,
-  atualPerm: 25,
-  cadastro: [26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
-  pvg: [37, 38, 39, 40],
-  endereco: [41, 42],
-  sigImpl: [43, 44, 45, 46, 47, 48, 49, 50],
-  sigLic: [51, 52, 53, 54, 55, 56, 57, 58],
-  sigMensal: [59, 60, 61, 62, 63, 64, 65, 66],
-  dev: [67, 68, 69, 70, 71],
-  taxaLixo: 72,
+  percAdit: 18,
+  area: 20,
+  unidades: 21,
+  aero: [22, 23, 24, 25],
+  m360: 26,
+  atualPerm: 27,
+  cadastro: [28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38],
+  pvg: [39, 40, 41, 42],
+  endereco: [43, 44],
+  sigImpl: [45, 46, 47, 48, 49, 50, 51, 52],
+  sigLic: [53, 54, 55, 56, 57, 58, 59, 60],
+  sigMensal: [61, 62, 63, 64, 65, 66, 67, 68],
+  dev: [69, 70, 71, 72, 73],
+  taxaLixo: 74,
 } as const;
 
 // ============================================================
-// Atas de registro - Nova gestão (73 cols) — same as Nova gestão
-// but with both "Valor da Ata" (7) and "Valor contratado" (8).
-// All indices ≥ 8 shift +1.
+// Atas de registro - Nova gestão — like Nova gestão but with
+// "Valor da Ata" (7) and "Valor contratado até o momento" (8) and
+// only 2 TA pairs (cols J/K + L/M → 9/10 + 11/12).
 // ============================================================
 const ATA = {
   valorAta: 7,
   valorContrato: 8,
-  maxAdit: 9,
-  vencimento: 14,
-  aditivado: 15,
-  percAdit: 16,
-  area: 18,
-  unidades: 19,
-  aero: [20, 21, 22, 23],
-  m360: 24,
-  atualPerm: 25,
-  cadastro: [26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
-  pvg: [37, 38, 39, 40],
-  endereco: [41, 42],
-  sigImpl: [43, 44, 45, 46, 47, 48, 49, 50],
-  sigLic: [51, 52, 53, 54, 55, 56, 57, 58],
-  sigMensal: [59, 60, 61, 62, 63, 64, 65, 66],
-  dev: [67, 68, 69, 70, 71],
-  taxaLixo: 72,
+  maxAdit: 18,
+  vencimento: 13,
+  aditivado: 14,
+  percAdit: 17,
+  area: 19,
+  unidades: 20,
+  aero: [21, 22, 23, 24],
+  m360: 25,
+  atualPerm: 26,
+  cadastro: [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37],
+  pvg: [38, 39, 40, 41],
+  endereco: [42, 43],
+  sigImpl: [44, 45, 46, 47, 48, 49, 50, 51],
+  sigLic: [52, 53, 54, 55, 56, 57, 58, 59],
+  sigMensal: [60, 61, 62, 63, 64, 65, 66, 67],
+  dev: [68, 69, 70, 71, 72],
+  taxaLixo: 73,
 } as const;
 
 function buildNovaGestao(row: string[]): Contract | null {
