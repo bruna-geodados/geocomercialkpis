@@ -532,27 +532,29 @@ export function parseSheet(
 ): Contract[] {
   // ============================================================
   // Inline: Aditivos Vigentes (tab "Gestão anterior - Aditivos vigentes")
-  // 31 cols. Foco em AB-AE (índices 27-30) + count de TAs (7 pares) e
-  // vencimento atualizado (X = 23).
+  // 35 cols. Foco em AF-AI (índices 31-34: Aero drone, 360º, SIG Web Licença,
+  // SIG Web/Mensal) + count de TAs (8 pares: J/K..X/Y) e vencimento atualizado
+  // (Z = 25). Valor aditivado AA=26, Assinado Geodados AB=27, Prefeitura
+  // AC=28, % Aditivada AD=29, Valor máx aditivos AE=30.
   // ============================================================
   function buildAditivosVigentes(row: string[]): Contract | null {
     if (!row || !row[1]) return null;
     const { municipio, uf } = splitMunicipio(row[1]);
     if (!municipio) return null;
     const valorContrato = num(row, 8);
-    const aeroDrone = num(row, 27);
-    const m360 = num(row, 28);
-    const sigWebLic = num(row, 29);
-    const sigWebMensal = num(row, 30);
+    const aeroDrone = num(row, 31);
+    const m360 = num(row, 32);
+    const sigWebLic = num(row, 33);
+    const sigWebMensal = num(row, 34);
     const totalVig = aeroDrone + m360 + sigWebLic + sigWebMensal;
     if (totalVig <= 0 && valorContrato <= 0) return null;
 
     const dataContrato = parseSheetDate(row[4]);
     const vigenciaInicial = parseSheetDate(row[5]);
-    const vencimento = parseSheetDate(row[23]);
+    const vencimento = parseSheetDate(row[25]);
     const populacao = num(row, 2);
-    const valorAditivado = num(row, 24);
-    const percAdit = num(row, 25);
+    const valorAditivado = num(row, 26);
+    const percAdit = num(row, 29);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -593,7 +595,7 @@ export function parseSheet(
       vencimento,
       valorAta: num(row, 7),
       valorContrato,
-      valorAditivosMax: num(row, 26),
+      valorAditivosMax: num(row, 30),
       valorAditivado,
       percentualAditivado: percAdit > 1 ? percAdit / 100 : percAdit,
       areaKm2: 0,
