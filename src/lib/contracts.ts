@@ -329,7 +329,9 @@ function buildAta(row: string[]): Contract | null {
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
   const vencimento =
-    parseSheetDate(row[ATA.vencimento]) ?? parseSheetDate(row[11]);
+    parseSheetDate(row[ATA.vencimento]) ??
+    parseSheetDate(row[11]) ??
+    parseSheetDate(row[9]);
   const populacao = num(row, 2);
 
   const receitaPorLinha: Record<ServiceLine, number> = {
