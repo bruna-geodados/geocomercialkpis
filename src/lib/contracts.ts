@@ -224,11 +224,7 @@ function buildNovaGestao(row: string[]): Contract | null {
 
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
-  const vencimento =
-    parseSheetDate(row[NOVA.vencimento]) ??
-    parseSheetDate(row[12]) ??
-    parseSheetDate(row[10]) ??
-    parseSheetDate(row[8]);
+  const vencimento = parseSheetDate(row[NOVA.vencimento]);
 
   const populacao = num(row, 2);
 
@@ -328,10 +324,7 @@ function buildAta(row: string[]): Contract | null {
 
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
-  const vencimento =
-    parseSheetDate(row[ATA.vencimento]) ??
-    parseSheetDate(row[11]) ??
-    parseSheetDate(row[9]);
+  const vencimento = parseSheetDate(row[ATA.vencimento]);
   const populacao = num(row, 2);
 
   const receitaPorLinha: Record<ServiceLine, number> = {
