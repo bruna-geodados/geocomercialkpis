@@ -2,10 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { parseSheet, type Contract } from "./contracts";
 
 const SPREADSHEET_ID = "1GLGSTS7a8bnLiwUjq-u3EN09Fi_is1KzCDdbcZTOy0A";
-const RANGE_NOVA = "Gestão atual - Contratos!A1:BW500";
-const RANGE_ATAS = "Gestão atual -Atas de Registro de Preço!A1:BX500";
-const RANGE_VIG = "Gestão anterior - Aditivos vigentes!A1:AE500";
-const RANGE_ANT = "Gestão Anterior - Contratos aditivados!A1:CS500";
+const RANGE_NOVA = "Gestão atual - Contratos!A1:BZ500";
+const RANGE_ATAS = "Gestão atual -Atas de Registro de Preço!A1:BZ500";
+const RANGE_VIG = "Gestão anterior - Aditivos vigentes!A1:AJ500";
+const RANGE_ANT = "Gestão Anterior - Contratos aditivados!A1:CA500";
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 
 export const fetchContracts = createServerFn({ method: "GET" }).handler(
