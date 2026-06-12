@@ -253,7 +253,7 @@ const ATA = {
   taxaLixo: 73,
 } as const;
 
-function buildNovaGestao(row: string[]): Contract | null {
+function buildNovaGestao(row: string[], header: string[]): Contract | null {
   if (!row || !row[1]) return null;
   const nRaw = String(row[0] ?? "").trim();
   if (!nRaw || !/^\d+/.test(nRaw)) return null;
@@ -264,7 +264,10 @@ function buildNovaGestao(row: string[]): Contract | null {
 
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
-  const vencimento = parseSheetDate(row[NOVA.vencimento]);
+  const vencimento = parseSheetDate(
+    row[col(header, "Vencimento do contrato atualizado", NOVA.vencimento)],
+    "BR",
+  );
 
   const populacao = num(row, 2);
 
@@ -303,7 +306,7 @@ function buildNovaGestao(row: string[]): Contract | null {
   else if (diasParaVencer <= 30) statusVencimento = "criticos";
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
-  const tas = countAditivosPairs(row, NOVA_TA_PAIRS);
+  const tas = countAditivosPairs(row, NOVA_TA_PAIRS, "BR");
 
   return {
     gestao: "nova",
@@ -351,7 +354,7 @@ function buildNovaGestao(row: string[]): Contract | null {
 // (full unit prices per service; populates Aero breakdown
 // that Nova gestão omits)
 // ============================================================
-function buildAta(row: string[]): Contract | null {
+function buildAta(row: string[], header: string[]): Contract | null {
   if (!row || !row[1]) return null;
   const nRaw = String(row[0] ?? "").trim();
   if (!nRaw || !/^\d+/.test(nRaw)) return null;
@@ -364,7 +367,10 @@ function buildAta(row: string[]): Contract | null {
 
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
-  const vencimento = parseSheetDate(row[ATA.vencimento]);
+  const vencimento = parseSheetDate(
+    row[col(header, "Vencimento do contrato atualizado", ATA.vencimento)],
+    "BR",
+  );
   const populacao = num(row, 2);
 
   const receitaPorLinha: Record<ServiceLine, number> = {
@@ -400,7 +406,7 @@ function buildAta(row: string[]): Contract | null {
   else if (diasParaVencer <= 30) statusVencimento = "criticos";
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
-  const tas = countAditivosPairs(row, ATA_TA_PAIRS);
+  const tas = countAditivosPairs(row, ATA_TA_PAIRS, "BR");
 
   return {
     gestao: "ata",
