@@ -96,20 +96,59 @@ export function parseBRNumber(raw: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** Parses dates in M/D/YYYY (US) or D/M/YYYY (BR) — sheet uses M/D/YYYY. */
-export function parseSheetDate(raw: unknown): Date | null {
+type DateOrder = "AUTO" | "BR" | "US";
+
+/** Parses spreadsheet dates without allowing JS date overflow to swap days/months. */
+export function parseSheetDate(raw: unknown, order: DateOrder = "AUTO"): Date | null {
   if (!raw) return null;
   const s = String(raw).trim();
   if (!s || s === "-") return null;
-  // M/D/YYYY (sheet default)
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) {
-    const [, mo, d, y] = m;
-    const date = new Date(Number(y), Number(mo) - 1, Number(d));
-    return Number.isNaN(date.getTime()) ? null : date;
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) {
+    const [, y, mo, d] = iso;
+    return makeDate(Number(y), Number(mo), Number(d));
   }
-  const parsed = new Date(s);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  const m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2}|\d{4})$/);
+  if (m) {
+    const a = Number(m[1]);
+    const b = Number(m[2]);
+    const year = Number(m[3].length === 2 ? `20${m[3]}` : m[3]);
+    const resolved =
+      order === "BR" || (order === "AUTO" && a > 12)
+        ? { day: a, month: b }
+        : order === "US" || (order === "AUTO" && b > 12)
+          ? { day: b, month: a }
+          : { day: b, month: a };
+    return makeDate(year, resolved.month, resolved.day);
+  }
+  return null;
+}
+
+function makeDate(year: number, month: number, day: number): Date | null {
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+  return date;
+}
+
+function normalizeHeader(raw: unknown): string {
+  return String(raw ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function col(header: readonly string[], label: string, fallback: number): number {
+  const wanted = normalizeHeader(label);
+  const found = header.findIndex((h) => normalizeHeader(h) === wanted);
+  return found >= 0 ? found : fallback;
 }
 
 function num(row: string[], i: number): number {
@@ -124,12 +163,13 @@ function sumIndexes(row: string[], indexes: number[]): number {
 function countAditivosPairs(
   row: string[],
   pairs: Array<[number, number]>,
+  order: DateOrder = "AUTO",
 ): { count: number; datas: Date[] } {
   const datas: Date[] = [];
   let count = 0;
   for (const [dateIdx, valueIdx] of pairs) {
     const valor = num(row, valueIdx);
-    const dt = parseSheetDate(row[dateIdx]);
+    const dt = parseSheetDate(row[dateIdx], order);
     if (valor > 0 || dt) {
       count += 1;
       if (dt) datas.push(dt);
@@ -213,7 +253,7 @@ const ATA = {
   taxaLixo: 73,
 } as const;
 
-function buildNovaGestao(row: string[]): Contract | null {
+function buildNovaGestao(row: string[], header: string[]): Contract | null {
   if (!row || !row[1]) return null;
   const nRaw = String(row[0] ?? "").trim();
   if (!nRaw || !/^\d+/.test(nRaw)) return null;
@@ -224,7 +264,10 @@ function buildNovaGestao(row: string[]): Contract | null {
 
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
-  const vencimento = parseSheetDate(row[NOVA.vencimento]);
+  const vencimento = parseSheetDate(
+    row[col(header, "Vencimento do contrato atualizado", NOVA.vencimento)],
+    "BR",
+  );
 
   const populacao = num(row, 2);
 
@@ -263,7 +306,7 @@ function buildNovaGestao(row: string[]): Contract | null {
   else if (diasParaVencer <= 30) statusVencimento = "criticos";
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
-  const tas = countAditivosPairs(row, NOVA_TA_PAIRS);
+  const tas = countAditivosPairs(row, NOVA_TA_PAIRS, "BR");
 
   return {
     gestao: "nova",
@@ -311,7 +354,7 @@ function buildNovaGestao(row: string[]): Contract | null {
 // (full unit prices per service; populates Aero breakdown
 // that Nova gestão omits)
 // ============================================================
-function buildAta(row: string[]): Contract | null {
+function buildAta(row: string[], header: string[]): Contract | null {
   if (!row || !row[1]) return null;
   const nRaw = String(row[0] ?? "").trim();
   if (!nRaw || !/^\d+/.test(nRaw)) return null;
@@ -324,7 +367,10 @@ function buildAta(row: string[]): Contract | null {
 
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
-  const vencimento = parseSheetDate(row[ATA.vencimento]);
+  const vencimento = parseSheetDate(
+    row[col(header, "Vencimento do contrato atualizado", ATA.vencimento)],
+    "BR",
+  );
   const populacao = num(row, 2);
 
   const receitaPorLinha: Record<ServiceLine, number> = {
@@ -360,7 +406,7 @@ function buildAta(row: string[]): Contract | null {
   else if (diasParaVencer <= 30) statusVencimento = "criticos";
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
-  const tas = countAditivosPairs(row, ATA_TA_PAIRS);
+  const tas = countAditivosPairs(row, ATA_TA_PAIRS, "BR");
 
   return {
     gestao: "ata",
@@ -429,7 +475,7 @@ const ANT_SIG_MENSAL = [59, 60, 61, 62, 63, 64, 65, 66];
 const ANT_DEV = [67, 68, 69, 70, 71];
 const ANT_TAXA_LIXO = 72;
 
-function buildGestaoAnterior(row: string[]): Contract | null {
+function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
   if (!row || !row[1]) return null;
   const { municipio, uf } = splitMunicipio(row[1]);
   if (!municipio) return null;
@@ -439,7 +485,10 @@ function buildGestaoAnterior(row: string[]): Contract | null {
   const populacao = num(row, 2);
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
-  const vencimento = parseSheetDate(row[9]);
+  const vencimento = parseSheetDate(
+    row[col(header, "Vencimento do contrato atualizado", 9)],
+    "BR",
+  );
 
   const receitaPorLinha: Record<ServiceLine, number> = {
     "Aerolevantamento": sumIndexes(row, ANT_AERO),
@@ -530,7 +579,7 @@ export function parseSheet(
   // (Z = 25). Valor aditivado AA=26, Assinado Geodados AB=27, Prefeitura
   // AC=28, % Aditivada AD=29, Valor máx aditivos AE=30.
   // ============================================================
-  function buildAditivosVigentes(row: string[]): Contract | null {
+  function buildAditivosVigentes(row: string[], header: string[]): Contract | null {
     if (!row || !row[1]) return null;
     const { municipio, uf } = splitMunicipio(row[1]);
     if (!municipio) return null;
@@ -544,7 +593,10 @@ export function parseSheet(
 
     const dataContrato = parseSheetDate(row[4]);
     const vigenciaInicial = parseSheetDate(row[5]);
-    const vencimento = parseSheetDate(row[25]);
+    const vencimento = parseSheetDate(
+      row[col(header, "Vencimento do contrato atualizado", 25)],
+      "BR",
+    );
     const populacao = num(row, 2);
     const valorAditivado = num(row, 26);
     const percAdit = num(row, 29);
@@ -559,7 +611,7 @@ export function parseSheet(
     else if (diasParaVencer <= 30) statusVencimento = "criticos";
     else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
-    const tas = countAditivosPairs(row, ANT_TA_PAIRS);
+    const tas = countAditivosPairs(row, ANT_TA_PAIRS, "BR");
     const nRaw = String(row[0] ?? "").trim();
 
     const receitaPorLinha: Record<ServiceLine, number> = {
@@ -627,9 +679,10 @@ export function parseSheet(
         : gestao === "vigente"
           ? buildAditivosVigentes
           : buildGestaoAnterior;
+  const header = values[1] ?? [];
   return values
     .slice(2)
-    .map((r) => builder(r))
+    .map((r) => builder(r, header))
     .filter((c): c is Contract => c !== null);
 }
 
