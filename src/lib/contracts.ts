@@ -559,6 +559,8 @@ function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
     valorAta: num(row, 7),
     valorContrato,
     valorAditivosMax: 0,
+    prazoMaxAditivos: null,
+    prazoMax60meses: null,
     valorAditivado: 0,
     percentualAditivado: 0,
     areaKm2: num(row, 10),
