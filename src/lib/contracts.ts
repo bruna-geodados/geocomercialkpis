@@ -615,9 +615,13 @@ export function parseSheet(
       row[col(header, "Vencimento do contrato atualizado", 25)],
       "BR",
     );
+    const prazoMax60meses = parseSheetDate(
+      row[col(header, "Prazo máximo 60 meses", 26)],
+      "BR",
+    );
     const populacao = num(row, 2);
-    const valorAditivado = num(row, 26);
-    const percAdit = num(row, 29);
+    const valorAditivado = num(row, 27);
+    const percAdit = num(row, 30);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -656,9 +660,11 @@ export function parseSheet(
       dataContrato,
       vigenciaInicial,
       vencimento,
+      prazoMaxAditivos: null,
+      prazoMax60meses,
       valorAta: num(row, 7),
       valorContrato,
-      valorAditivosMax: num(row, 30),
+      valorAditivosMax: num(row, 31),
       valorAditivado,
       percentualAditivado: percAdit > 1 ? percAdit / 100 : percAdit,
       areaKm2: 0,
