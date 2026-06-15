@@ -602,10 +602,10 @@ export function parseSheet(
     const { municipio, uf } = splitMunicipio(row[1]);
     if (!municipio) return null;
     const valorContrato = num(row, 8);
-    const aeroDrone = num(row, 31);
-    const m360 = num(row, 32);
-    const sigWebLic = num(row, 33);
-    const sigWebMensal = num(row, 34);
+    const aeroDrone = num(row, 32);
+    const m360 = num(row, 33);
+    const sigWebLic = num(row, 34);
+    const sigWebMensal = num(row, 35);
     const totalVig = aeroDrone + m360 + sigWebLic + sigWebMensal;
     if (totalVig <= 0 && valorContrato <= 0) return null;
 
