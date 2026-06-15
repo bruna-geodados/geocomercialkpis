@@ -272,6 +272,10 @@ function buildNovaGestao(row: string[], header: string[]): Contract | null {
     row[col(header, "Vencimento do contrato atualizado", NOVA.vencimento)],
     "BR",
   );
+  const prazoMaxAditivos = parseSheetDate(
+    row[col(header, "Prazo Máximo dos aditivos", NOVA.prazoMaxAdit)],
+    "BR",
+  );
 
   const populacao = num(row, 2);
 
@@ -322,6 +326,8 @@ function buildNovaGestao(row: string[], header: string[]): Contract | null {
     dataContrato,
     vigenciaInicial,
     vencimento,
+    prazoMaxAditivos,
+    prazoMax60meses: null,
     valorAta: 0,
     valorContrato,
     valorAditivosMax: num(row, NOVA.maxAdit),
