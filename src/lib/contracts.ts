@@ -209,8 +209,37 @@ const ANT_TA_PAIRS: Array<[number, number]> = [
 // 69..73 Desenvolvimento & Custom | 74 Taxa de Lixo
 const NOVA = {
   valorContrato: 7,
-  maxAdit: 19,
+  maxAdit: 20,
   vencimento: 14,
+  prazoMaxAdit: 15,
+  aditivado: 16,
+  percAdit: 19,
+  area: 21,
+  unidades: 22,
+  aero: [23, 24, 25, 26],
+  m360: 27,
+  atualPerm: 28,
+  cadastro: [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+  pvg: [40, 41, 42, 43],
+  endereco: [44, 45],
+  sigImpl: [46, 47, 48, 49, 50, 51, 52, 53],
+  sigLic: [54, 55, 56, 57, 58, 59, 60, 61],
+  sigMensal: [62, 63, 64, 65, 66, 67, 68, 69],
+  dev: [70, 71, 72, 73, 74],
+  taxaLixo: 75,
+} as const;
+
+// ============================================================
+// Atas de registro - Nova gestão — like Nova gestão but with
+// "Valor da Ata" (7) and "Valor contratado até o momento" (8) and
+// only 2 TA pairs (cols J/K + L/M → 9/10 + 11/12).
+// ============================================================
+const ATA = {
+  valorAta: 7,
+  valorContrato: 8,
+  maxAdit: 19,
+  vencimento: 13,
+  prazoMaxAdit: 14,
   aditivado: 15,
   percAdit: 18,
   area: 20,
@@ -226,33 +255,6 @@ const NOVA = {
   sigMensal: [61, 62, 63, 64, 65, 66, 67, 68],
   dev: [69, 70, 71, 72, 73],
   taxaLixo: 74,
-} as const;
-
-// ============================================================
-// Atas de registro - Nova gestão — like Nova gestão but with
-// "Valor da Ata" (7) and "Valor contratado até o momento" (8) and
-// only 2 TA pairs (cols J/K + L/M → 9/10 + 11/12).
-// ============================================================
-const ATA = {
-  valorAta: 7,
-  valorContrato: 8,
-  maxAdit: 18,
-  vencimento: 13,
-  aditivado: 14,
-  percAdit: 17,
-  area: 19,
-  unidades: 20,
-  aero: [21, 22, 23, 24],
-  m360: 25,
-  atualPerm: 26,
-  cadastro: [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37],
-  pvg: [38, 39, 40, 41],
-  endereco: [42, 43],
-  sigImpl: [44, 45, 46, 47, 48, 49, 50, 51],
-  sigLic: [52, 53, 54, 55, 56, 57, 58, 59],
-  sigMensal: [60, 61, 62, 63, 64, 65, 66, 67],
-  dev: [68, 69, 70, 71, 72],
-  taxaLixo: 73,
 } as const;
 
 function buildNovaGestao(row: string[], header: string[]): Contract | null {
