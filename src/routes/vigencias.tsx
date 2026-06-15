@@ -70,6 +70,8 @@ function Vigencias() {
                 <th className="py-2 pr-4">Contrato</th>
                 <th className="py-2 pr-4">Início</th>
                 <th className="py-2 pr-4">Vencimento</th>
+                <th className="py-2 pr-4">Prazo máx. aditivos</th>
+                <th className="py-2 pr-4">Prazo máx. 60 meses</th>
                 <th className="py-2 pr-4 text-right">Dias</th>
                 <th className="py-2 pr-4">Status</th>
                 <th className="py-2 pr-4 text-right">Valor</th>
@@ -85,6 +87,8 @@ function Vigencias() {
                     <td className="py-2.5 pr-4 text-muted-foreground text-xs">{c.contrato}</td>
                     <td className="py-2.5 pr-4 text-muted-foreground">{fmtDate(c.vigenciaInicial)}</td>
                     <td className="py-2.5 pr-4">{fmtDate(c.vencimento)}</td>
+                    <td className="py-2.5 pr-4 text-muted-foreground">{fmtDate(c.prazoMaxAditivos)}</td>
+                    <td className="py-2.5 pr-4 text-muted-foreground">{fmtDate(c.prazoMax60meses)}</td>
                     <td className="py-2.5 pr-4 text-right tabular-nums">
                       {c.vencimento ? (c.diasParaVencer >= 0 ? `${c.diasParaVencer}d` : `${Math.abs(c.diasParaVencer)}d atrás`) : "—"}
                     </td>

@@ -25,6 +25,8 @@ export interface Contract {
   dataContrato: Date | null;
   vigenciaInicial: Date | null;
   vencimento: Date | null;
+  prazoMaxAditivos: Date | null;
+  prazoMax60meses: Date | null;
   valorAta: number;
   valorContrato: number;
   valorAditivosMax: number;
@@ -207,8 +209,37 @@ const ANT_TA_PAIRS: Array<[number, number]> = [
 // 69..73 Desenvolvimento & Custom | 74 Taxa de Lixo
 const NOVA = {
   valorContrato: 7,
-  maxAdit: 19,
+  maxAdit: 20,
   vencimento: 14,
+  prazoMaxAdit: 15,
+  aditivado: 16,
+  percAdit: 19,
+  area: 21,
+  unidades: 22,
+  aero: [23, 24, 25, 26],
+  m360: 27,
+  atualPerm: 28,
+  cadastro: [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+  pvg: [40, 41, 42, 43],
+  endereco: [44, 45],
+  sigImpl: [46, 47, 48, 49, 50, 51, 52, 53],
+  sigLic: [54, 55, 56, 57, 58, 59, 60, 61],
+  sigMensal: [62, 63, 64, 65, 66, 67, 68, 69],
+  dev: [70, 71, 72, 73, 74],
+  taxaLixo: 75,
+} as const;
+
+// ============================================================
+// Atas de registro - Nova gestão — like Nova gestão but with
+// "Valor da Ata" (7) and "Valor contratado até o momento" (8) and
+// only 2 TA pairs (cols J/K + L/M → 9/10 + 11/12).
+// ============================================================
+const ATA = {
+  valorAta: 7,
+  valorContrato: 8,
+  maxAdit: 19,
+  vencimento: 13,
+  prazoMaxAdit: 14,
   aditivado: 15,
   percAdit: 18,
   area: 20,
@@ -226,33 +257,6 @@ const NOVA = {
   taxaLixo: 74,
 } as const;
 
-// ============================================================
-// Atas de registro - Nova gestão — like Nova gestão but with
-// "Valor da Ata" (7) and "Valor contratado até o momento" (8) and
-// only 2 TA pairs (cols J/K + L/M → 9/10 + 11/12).
-// ============================================================
-const ATA = {
-  valorAta: 7,
-  valorContrato: 8,
-  maxAdit: 18,
-  vencimento: 13,
-  aditivado: 14,
-  percAdit: 17,
-  area: 19,
-  unidades: 20,
-  aero: [21, 22, 23, 24],
-  m360: 25,
-  atualPerm: 26,
-  cadastro: [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37],
-  pvg: [38, 39, 40, 41],
-  endereco: [42, 43],
-  sigImpl: [44, 45, 46, 47, 48, 49, 50, 51],
-  sigLic: [52, 53, 54, 55, 56, 57, 58, 59],
-  sigMensal: [60, 61, 62, 63, 64, 65, 66, 67],
-  dev: [68, 69, 70, 71, 72],
-  taxaLixo: 73,
-} as const;
-
 function buildNovaGestao(row: string[], header: string[]): Contract | null {
   if (!row || !row[1]) return null;
   const nRaw = String(row[0] ?? "").trim();
@@ -266,6 +270,10 @@ function buildNovaGestao(row: string[], header: string[]): Contract | null {
   const vigenciaInicial = parseSheetDate(row[5]);
   const vencimento = parseSheetDate(
     row[col(header, "Vencimento do contrato atualizado", NOVA.vencimento)],
+    "BR",
+  );
+  const prazoMaxAditivos = parseSheetDate(
+    row[col(header, "Prazo Máximo dos aditivos", NOVA.prazoMaxAdit)],
     "BR",
   );
 
@@ -318,6 +326,8 @@ function buildNovaGestao(row: string[], header: string[]): Contract | null {
     dataContrato,
     vigenciaInicial,
     vencimento,
+    prazoMaxAditivos,
+    prazoMax60meses: null,
     valorAta: 0,
     valorContrato,
     valorAditivosMax: num(row, NOVA.maxAdit),
@@ -371,6 +381,10 @@ function buildAta(row: string[], header: string[]): Contract | null {
     row[col(header, "Vencimento do contrato atualizado", ATA.vencimento)],
     "BR",
   );
+  const prazoMaxAditivos = parseSheetDate(
+    row[col(header, "Prazo máximo dos aditivos", ATA.prazoMaxAdit)],
+    "BR",
+  );
   const populacao = num(row, 2);
 
   const receitaPorLinha: Record<ServiceLine, number> = {
@@ -418,6 +432,8 @@ function buildAta(row: string[], header: string[]): Contract | null {
     dataContrato,
     vigenciaInicial,
     vencimento,
+    prazoMaxAditivos,
+    prazoMax60meses: null,
     valorAta,
     valorContrato,
     valorAditivosMax: num(row, ATA.maxAdit),
@@ -543,6 +559,8 @@ function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
     valorAta: num(row, 7),
     valorContrato,
     valorAditivosMax: 0,
+    prazoMaxAditivos: null,
+    prazoMax60meses: null,
     valorAditivado: 0,
     percentualAditivado: 0,
     areaKm2: num(row, 10),
@@ -584,10 +602,10 @@ export function parseSheet(
     const { municipio, uf } = splitMunicipio(row[1]);
     if (!municipio) return null;
     const valorContrato = num(row, 8);
-    const aeroDrone = num(row, 31);
-    const m360 = num(row, 32);
-    const sigWebLic = num(row, 33);
-    const sigWebMensal = num(row, 34);
+    const aeroDrone = num(row, 32);
+    const m360 = num(row, 33);
+    const sigWebLic = num(row, 34);
+    const sigWebMensal = num(row, 35);
     const totalVig = aeroDrone + m360 + sigWebLic + sigWebMensal;
     if (totalVig <= 0 && valorContrato <= 0) return null;
 
@@ -597,9 +615,13 @@ export function parseSheet(
       row[col(header, "Vencimento do contrato atualizado", 25)],
       "BR",
     );
+    const prazoMax60meses = parseSheetDate(
+      row[col(header, "Prazo máximo 60 meses", 26)],
+      "BR",
+    );
     const populacao = num(row, 2);
-    const valorAditivado = num(row, 26);
-    const percAdit = num(row, 29);
+    const valorAditivado = num(row, 27);
+    const percAdit = num(row, 30);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -638,9 +660,11 @@ export function parseSheet(
       dataContrato,
       vigenciaInicial,
       vencimento,
+      prazoMaxAditivos: null,
+      prazoMax60meses,
       valorAta: num(row, 7),
       valorContrato,
-      valorAditivosMax: num(row, 30),
+      valorAditivosMax: num(row, 31),
       valorAditivado,
       percentualAditivado: percAdit > 1 ? percAdit / 100 : percAdit,
       areaKm2: 0,
