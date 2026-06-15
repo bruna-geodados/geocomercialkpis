@@ -381,6 +381,10 @@ function buildAta(row: string[], header: string[]): Contract | null {
     row[col(header, "Vencimento do contrato atualizado", ATA.vencimento)],
     "BR",
   );
+  const prazoMaxAditivos = parseSheetDate(
+    row[col(header, "Prazo máximo dos aditivos", ATA.prazoMaxAdit)],
+    "BR",
+  );
   const populacao = num(row, 2);
 
   const receitaPorLinha: Record<ServiceLine, number> = {
@@ -428,6 +432,8 @@ function buildAta(row: string[], header: string[]): Contract | null {
     dataContrato,
     vigenciaInicial,
     vencimento,
+    prazoMaxAditivos,
+    prazoMax60meses: null,
     valorAta,
     valorContrato,
     valorAditivosMax: num(row, ATA.maxAdit),
