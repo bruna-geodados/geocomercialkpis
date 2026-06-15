@@ -25,6 +25,8 @@ export interface Contract {
   dataContrato: Date | null;
   vigenciaInicial: Date | null;
   vencimento: Date | null;
+  prazoMaxAditivos: Date | null;
+  prazoMax60meses: Date | null;
   valorAta: number;
   valorContrato: number;
   valorAditivosMax: number;
