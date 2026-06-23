@@ -25,8 +25,12 @@ export const Route = createFileRoute("/receita")({
 function Receita() {
   const { data } = useSuspenseQuery(contractsQueryOptions());
   const filters = useFilters();
-  const contracts = useMemo(() => applyFilters(data.contracts, filters), [data, filters]);
-  const [linhaSelecionada, setLinhaSelecionada] = useState<ServiceLine>("Cadastro Multifinalitário");
+  const allContracts = useMemo(() => applyFilters(data.contracts, filters), [data, filters]);
+  // Atas de Registro de Preço são tratadas como categoria separada e NÃO entram
+  // nos totais nem nos gráficos agregados das demais linhas de serviço.
+  const contracts = useMemo(() => allContracts.filter((c) => c.gestao !== "ata"), [allContracts]);
+  type Aba = "Todos" | ServiceLine;
+  const [linhaSelecionada, setLinhaSelecionada] = useState<Aba>("Todos");
 
   const totalGeral = contracts.reduce((s, c) => s + c.valorContrato, 0);
   const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
@@ -42,17 +46,29 @@ function Receita() {
     [contracts],
   );
 
-  const rankingMunicipios = useMemo(
-    () =>
-      contracts
-        .map((c) => ({
-          municipio: c.municipio, uf: c.uf,
-          valor: c.receitaPorLinha[linhaSelecionada],
-        }))
+  const rankingMunicipios = useMemo(() => {
+    if (linhaSelecionada === "Todos") {
+      // Agrupa todos os serviços por município — valor total do contrato.
+      const map = new Map<string, { municipio: string; uf: string; valor: number }>();
+      for (const c of contracts) {
+        const key = `${c.municipio}__${c.uf}`;
+        const prev = map.get(key);
+        if (prev) prev.valor += c.valorContrato;
+        else map.set(key, { municipio: c.municipio, uf: c.uf, valor: c.valorContrato });
+      }
+      return Array.from(map.values())
         .filter((r) => r.valor > 0)
-        .sort((a, b) => b.valor - a.valor),
-    [contracts, linhaSelecionada],
-  );
+        .sort((a, b) => b.valor - a.valor);
+    }
+    return contracts
+      .map((c) => ({
+        municipio: c.municipio,
+        uf: c.uf,
+        valor: c.receitaPorLinha[linhaSelecionada],
+      }))
+      .filter((r) => r.valor > 0)
+      .sort((a, b) => b.valor - a.valor);
+  }, [contracts, linhaSelecionada]);
 
   const top3 = porLinha.slice(0, 3);
 
@@ -100,7 +116,7 @@ function Receita() {
         description={`${rankingMunicipios.length} municípios em "${linhaSelecionada}"`}
         action={
           <div className="flex flex-wrap gap-1 max-w-[60%] justify-end">
-            {SERVICE_LINES.map((l) => (
+            {(["Todos", ...SERVICE_LINES] as Aba[]).map((l) => (
               <Button
                 key={l}
                 variant={l === linhaSelecionada ? "default" : "outline"}

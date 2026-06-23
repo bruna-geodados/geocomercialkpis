@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { Plane, Cpu, Ruler, Satellite, Home } from "lucide-react";
+import { Plane, Cpu, Ruler, Satellite, Home, Users } from "lucide-react";
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
 import { fmtBRL, fmtBRLShort, fmtInt } from "@/lib/contracts";
@@ -32,10 +32,12 @@ const COLORS = [
 function AeroPage() {
   const { data } = useSuspenseQuery(contractsQueryOptions());
   const filters = useFilters();
-  const contracts = useMemo(
+  const allContracts = useMemo(
     () => applyFilters(data.contracts, filters),
     [data, filters],
   );
+  // Atas de Registro são categoria separada — não compõem agregados.
+  const contracts = useMemo(() => allContracts.filter((c) => c.gestao !== "ata"), [allContracts]);
 
   const totalDrone = contracts.reduce((s, c) => s + c.aero.drone, 0);
   const totalTripulado = contracts.reduce((s, c) => s + c.aero.tripulado, 0);
@@ -51,6 +53,11 @@ function AeroPage() {
   const qtdSatelite = contracts.filter((c) => c.aero.satelite > 0).length;
   const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
   const aeroPorImovel = totalImoveis > 0 ? total / totalImoveis : 0;
+  // Valor médio por habitante: total aero ÷ população dos municípios com receita aero.
+  const populacaoAero = contracts
+    .filter((c) => c.aero.drone + c.aero.tripulado + c.aero.valorKm2 + c.aero.satelite > 0)
+    .reduce((s, c) => s + c.populacao, 0);
+  const aeroPorHab = populacaoAero > 0 ? total / populacaoAero : 0;
 
   const mix = [
     { tipo: "Drone (não tripulado)", valor: totalDrone, qtd: qtdDrone },
@@ -88,7 +95,7 @@ function AeroPage() {
     >
       <FiltersBar contracts={data.contracts} />
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <KpiCard
           label="Drone (não tripulado)"
           value={fmtBRLShort(totalDrone)}
@@ -120,6 +127,13 @@ function AeroPage() {
           value={fmtBRL(aeroPorImovel)}
           hint={`${fmtInt(totalImoveis)} imóveis`}
           icon={<Home className="h-4 w-4" />}
+        />
+        <KpiCard
+          label="Aero R$/hab"
+          value={fmtBRL(aeroPorHab)}
+          hint={`${fmtInt(populacaoAero)} hab. com aero`}
+          icon={<Users className="h-4 w-4" />}
+          tone="accent"
         />
       </div>
 
