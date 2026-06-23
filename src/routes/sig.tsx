@@ -7,7 +7,7 @@ import {
 import { contractsQueryOptions } from "@/lib/queries";
 import { applyFilters, useFilters } from "@/lib/filters-store";
 import { fmtBRL, fmtBRLShort, fmtInt, sigModuleAggregates, SIG_MODULES } from "@/lib/contracts";
-import { Home } from "lucide-react";
+import { Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageShell } from "@/components/page-shell";
 import { KpiCard } from "@/components/kpi-card";
@@ -23,7 +23,9 @@ export const Route = createFileRoute("/sig")({
 function SigPage() {
   const { data } = useSuspenseQuery(contractsQueryOptions());
   const filters = useFilters();
-  const contracts = useMemo(() => applyFilters(data.contracts, filters), [data, filters]);
+  const allContracts = useMemo(() => applyFilters(data.contracts, filters), [data, filters]);
+  // Exclui Atas de Registro dos agregados — categoria separada.
+  const contracts = useMemo(() => allContracts.filter((c) => c.gestao !== "ata"), [allContracts]);
 
   const mrr = contracts.reduce((s, c) => s + c.mrrSig, 0);
   const implTotal = useMemo(
@@ -35,8 +37,17 @@ function SigPage() {
     [contracts],
   );
   const clientesSig = contracts.filter((c) => c.contratosSig > 0).length;
-  const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
-  const mrrPorImovel = totalImoveis > 0 ? mrr / totalImoveis : 0;
+  // População total dos municípios com contrato SIG ativo (MRR > 0).
+  const populacaoSig = contracts
+    .filter((c) => c.mrrSig > 0)
+    .reduce((s, c) => s + c.populacao, 0);
+  const mrrPorHab = populacaoSig > 0 ? mrr / populacaoSig : 0;
+  // Valor total dos contratos SIG (impl + lic + mensal) ÷ população vinculada
+  const valorSigTotal = implTotal + licTotal + mrr;
+  const populacaoSigQualquer = contracts
+    .filter((c) => c.receitaPorLinha["SIG - Implantação"] + c.receitaPorLinha["SIG - Licenças"] + c.mrrSig > 0)
+    .reduce((s, c) => s + c.populacao, 0);
+  const sigPorHab = populacaoSigQualquer > 0 ? valorSigTotal / populacaoSigQualquer : 0;
 
   const dadosModulos = useMemo(() => {
     const impl = sigModuleAggregates(contracts, "implantacao");
@@ -94,7 +105,8 @@ function SigPage() {
         <KpiCard label="Implantação" value={fmtBRLShort(implTotal)} hint="Receita única (setup)" />
         <KpiCard label="Licenças" value={fmtBRLShort(licTotal)} hint="Licença anual" tone="accent" />
         <KpiCard label="Clientes SIG" value={fmtInt(clientesSig)} hint={`${contracts.length - clientesSig} sem nenhum módulo`} />
-        <KpiCard label="MRR / imóvel" value={fmtBRL(mrrPorImovel)} hint={`${fmtInt(totalImoveis)} imóveis na carteira`} icon={<Home className="h-4 w-4" />} />
+        <KpiCard label="MRR R$/hab" value={fmtBRL(mrrPorHab)} hint={`${fmtInt(populacaoSig)} hab. com SIG ativo`} icon={<Users className="h-4 w-4" />} />
+        <KpiCard label="SIG R$/hab" value={fmtBRL(sigPorHab)} hint={`Impl + Licença + Mensal ÷ população`} tone="accent" icon={<Users className="h-4 w-4" />} />
       </div>
 
       <SectionCard title="Mix por Módulo SIG" description="Implantação, Licença e Mensal por módulo">
@@ -128,7 +140,6 @@ function SigPage() {
                 <th className="py-2 pr-4 text-right">SIG Web Implantação</th>
                 <th className="py-2 pr-4 text-right">SIG Web Licença</th>
                 <th className="py-2 pr-4 text-right">SIG Web/Mensal</th>
-                <th className="py-2 pr-4 text-right">% do MRR total</th>
               </tr>
             </thead>
             <tbody>
@@ -150,14 +161,11 @@ function SigPage() {
                   <td className="py-2.5 pr-4 text-right tabular-nums font-semibold text-[oklch(0.55_0.14_155)]">
                     {r.webMensal > 0 ? fmtBRL(r.webMensal) : "—"}
                   </td>
-                  <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
-                    {r.mrrTotal > 0 ? `${((r.webMensal / r.mrrTotal) * 100).toFixed(0)}%` : "—"}
-                  </td>
                 </tr>
               ))}
               {webMensalDetalhe.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
                     Nenhum município com SIG Web neste filtro.
                   </td>
                 </tr>
