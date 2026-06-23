@@ -100,7 +100,7 @@ function SigPage() {
       title="SIG & Licenças Recorrentes"
       subtitle="MRR, mix por módulo e oportunidades de upsell"
     >
-      <FiltersBar contracts={data.contracts} />
+      <FiltersBar contracts={data.contracts} gestaoOptions={["nova", "vigente", "all"]} />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KpiCard label="MRR Total" value={fmtBRLShort(mrr)} hint={fmtBRL(mrr)} tone="success" />
