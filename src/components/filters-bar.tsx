@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Search, X, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,36 @@ import {
 import { useFilters, applyFilters, toCSV, downloadCSV } from "@/lib/filters-store";
 import type { Contract } from "@/lib/contracts";
 
-export function FiltersBar({ contracts }: { contracts: Contract[] }) {
+type GestaoOpt = "nova" | "ata" | "vigente" | "anterior" | "all";
+
+const ALL_GESTAO_OPTIONS: { v: GestaoOpt; label: string }[] = [
+  { v: "nova", label: "Nova Gestão" },
+  { v: "ata", label: "Atas de Registro" },
+  { v: "vigente", label: "Aditivos Vigentes" },
+  { v: "anterior", label: "Gestão Anterior" },
+  { v: "all", label: "Todas" },
+];
+
+export function FiltersBar({
+  contracts,
+  gestaoOptions,
+}: {
+  contracts: Contract[];
+  gestaoOptions?: GestaoOpt[];
+}) {
   const { uf, ano, busca, gestao, setUf, setAno, setBusca, setGestao, reset } =
     useFilters();
+
+  const opts = gestaoOptions
+    ? ALL_GESTAO_OPTIONS.filter((o) => gestaoOptions.includes(o.v))
+    : ALL_GESTAO_OPTIONS;
+
+  // Se o gestao atual não está disponível nesta página, força para a primeira opção.
+  useEffect(() => {
+    if (!opts.some((o) => o.v === gestao)) {
+      setGestao(opts[0]?.v ?? "nova");
+    }
+  }, [opts, gestao, setGestao]);
 
   const ufs = useMemo(
     () => Array.from(new Set(contracts.map((c) => c.uf).filter(Boolean))).sort(),
@@ -32,15 +59,7 @@ export function FiltersBar({ contracts }: { contracts: Contract[] }) {
   return (
     <div className="flex flex-wrap gap-2 items-center bg-card border rounded-lg p-3">
       <div className="inline-flex rounded-md border bg-background p-0.5 text-xs font-medium">
-        {(
-          [
-            { v: "nova", label: "Nova Gestão" },
-            { v: "ata", label: "Atas de Registro" },
-            { v: "vigente", label: "Aditivos Vigentes" },
-            { v: "anterior", label: "Gestão Anterior" },
-            { v: "all", label: "Todas" },
-          ] as const
-        ).map((opt) => (
+        {opts.map((opt) => (
           <button
             key={opt.v}
             onClick={() => setGestao(opt.v)}
