@@ -84,6 +84,8 @@ function SigPage() {
           webLic: c.sigBreakdown[0]?.licenca ?? 0,
           webMensal: c.mrrSigWeb,
           mrrTotal: c.mrrSig,
+          populacao: c.populacao,
+          mrrPorHab: c.populacao > 0 ? c.mrrSig / c.populacao : 0,
         }))
         .filter((r) => r.webMensal > 0 || r.webLic > 0 || r.webImpl > 0)
         .sort((a, b) => b.webMensal - a.webMensal),
@@ -140,6 +142,7 @@ function SigPage() {
                 <th className="py-2 pr-4 text-right">SIG Web Implantação</th>
                 <th className="py-2 pr-4 text-right">SIG Web Licença</th>
                 <th className="py-2 pr-4 text-right">SIG Web/Mensal</th>
+                <th className="py-2 pr-4 text-right">MRR R$/hab</th>
               </tr>
             </thead>
             <tbody>
@@ -161,11 +164,14 @@ function SigPage() {
                   <td className="py-2.5 pr-4 text-right tabular-nums font-semibold text-[oklch(0.55_0.14_155)]">
                     {r.webMensal > 0 ? fmtBRL(r.webMensal) : "—"}
                   </td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums">
+                    {r.mrrPorHab > 0 ? fmtBRL(r.mrrPorHab) : "—"}
+                  </td>
                 </tr>
               ))}
               {webMensalDetalhe.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
                     Nenhum município com SIG Web neste filtro.
                   </td>
                 </tr>
