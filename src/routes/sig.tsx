@@ -143,6 +143,7 @@ function SigPage() {
                 <th className="py-2 pr-4 text-right">SIG Web Licença</th>
                 <th className="py-2 pr-4 text-right">SIG Web/Mensal</th>
                 <th className="py-2 pr-4 text-right">MRR R$/hab</th>
+                <th className="py-2 pr-4 text-right">População</th>
               </tr>
             </thead>
             <tbody>
@@ -167,11 +168,14 @@ function SigPage() {
                   <td className="py-2.5 pr-4 text-right tabular-nums">
                     {r.mrrPorHab > 0 ? fmtBRL(r.mrrPorHab) : "—"}
                   </td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
+                    {r.populacao > 0 ? fmtInt(r.populacao) : "—"}
+                  </td>
                 </tr>
               ))}
               {webMensalDetalhe.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="py-12 text-center text-muted-foreground">
                     Nenhum município com SIG Web neste filtro.
                   </td>
                 </tr>

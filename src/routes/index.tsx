@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import {
-  Briefcase, DollarSign, TrendingUp, AlertTriangle, Home, Percent, Sparkles, FileStack, CalendarClock,
+  Briefcase, DollarSign, TrendingUp, AlertTriangle, Home, Ruler, Sparkles, FileStack, CalendarClock,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -46,17 +46,15 @@ function VisaoGeral() {
   const contracts = useMemo(() => applyFilters(data.contracts, filters), [data, filters]);
 
   const totalValor = contracts.reduce((s, c) => s + c.valorContrato, 0);
-  const totalAditivado = contracts.reduce((s, c) => s + c.valorAditivado, 0);
   const mrr = contracts.reduce((s, c) => s + c.mrrSig, 0);
   const ticketMedio = contracts.length ? totalValor / contracts.length : 0;
   const vencendo90 = contracts.filter(
     (c) => c.diasParaVencer >= 0 && c.diasParaVencer <= 90,
   ).length;
-  const aditivoMedio = contracts.length
-    ? contracts.reduce((s, c) => s + c.percentualAditivado, 0) / contracts.length
-    : 0;
   const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
   const valorPorImovel = totalImoveis > 0 ? totalValor / totalImoveis : 0;
+  const totalAreaKm2 = contracts.reduce((s, c) => s + c.areaKm2, 0);
+  const valorPorKm2 = totalAreaKm2 > 0 ? totalValor / totalAreaKm2 : 0;
 
   // Aditivos vigentes — fonte primária: aba "Gestão anterior - Aditivos vigentes"
   // Aplica filtros (UF/busca/ano) sem restringir por gestão, para o destaque
@@ -131,7 +129,7 @@ function VisaoGeral() {
         <KpiCard label="Ticket Médio" value={fmtBRLShort(ticketMedio)} icon={<TrendingUp className="h-4 w-4" />} />
         <KpiCard label="Imóveis" value={fmtInt(totalImoveis)} hint={`R$/imóvel: ${fmtBRL(valorPorImovel)}`} icon={<Home className="h-4 w-4" />} />
         <KpiCard label="MRR SIG" value={fmtBRLShort(mrr)} hint="Licenças mensais" tone="success" />
-        <KpiCard label="% Aditivado Médio" value={fmtPct(aditivoMedio)} icon={<Percent className="h-4 w-4" />} hint={`Total: ${fmtBRLShort(totalAditivado)}`} />
+        <KpiCard label="Área (km²)" value={fmtInt(Math.round(totalAreaKm2))} hint={`R$/km²: ${valorPorKm2 > 0 ? fmtBRL(valorPorKm2) : "—"}`} icon={<Ruler className="h-4 w-4" />} />
         <KpiCard label="Vencendo em 90d" value={fmtInt(vencendo90)} icon={<AlertTriangle className="h-4 w-4" />} tone={vencendo90 > 0 ? "warning" : "default"} />
       </div>
 
@@ -307,9 +305,11 @@ function VisaoGeral() {
                 <th className="py-2 pr-4">UF</th>
                 <th className="py-2 pr-4 text-right">População</th>
                 <th className="py-2 pr-4 text-right">Imóveis</th>
+                <th className="py-2 pr-4 text-right">Área (km²)</th>
                 <th className="py-2 pr-4 text-right">Valor</th>
                 <th className="py-2 pr-4 text-right">R$/hab</th>
                 <th className="py-2 pr-4 text-right">R$/imóvel</th>
+                <th className="py-2 pr-4 text-right">R$/km²</th>
                 <th className="py-2 pr-4 text-right">% Aditivado</th>
                 <th className="py-2 pr-4">Vencimento</th>
               </tr>
@@ -321,12 +321,18 @@ function VisaoGeral() {
                   <td className="py-2.5 pr-4 text-muted-foreground">{c.uf}</td>
                   <td className="py-2.5 pr-4 text-right tabular-nums">{fmtInt(c.populacao)}</td>
                   <td className="py-2.5 pr-4 text-right tabular-nums">{fmtInt(c.unidades)}</td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
+                    {c.areaKm2 > 0 ? c.areaKm2.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) : "—"}
+                  </td>
                   <td className="py-2.5 pr-4 text-right tabular-nums font-medium">{fmtBRLShort(c.valorContrato)}</td>
                   <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
                     {c.ticketPorHabitante > 0 ? fmtBRL(c.ticketPorHabitante) : "—"}
                   </td>
                   <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
                     {c.unidades > 0 ? fmtBRL(c.valorContrato / c.unidades) : "—"}
+                  </td>
+                  <td className="py-2.5 pr-4 text-right tabular-nums text-muted-foreground">
+                    {c.areaKm2 > 0 ? fmtBRL(c.valorContrato / c.areaKm2) : "—"}
                   </td>
                   <td className="py-2.5 pr-4 text-right tabular-nums">{fmtPct(c.percentualAditivado)}</td>
                   <td className="py-2.5 pr-4 text-muted-foreground">

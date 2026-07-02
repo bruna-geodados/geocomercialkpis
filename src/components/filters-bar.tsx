@@ -8,12 +8,13 @@ import {
 import { useFilters, applyFilters, toCSV, downloadCSV } from "@/lib/filters-store";
 import type { Contract } from "@/lib/contracts";
 
-type GestaoOpt = "nova" | "ata" | "vigente" | "anterior" | "all";
+type GestaoOpt = "nova" | "aditivo-atual" | "ata" | "vigente" | "anterior" | "all";
 
 const ALL_GESTAO_OPTIONS: { v: GestaoOpt; label: string }[] = [
-  { v: "nova", label: "Nova Gestão" },
+  { v: "nova", label: "Gestão Atual" },
+  { v: "aditivo-atual", label: "Gestão Atual - Aditivos" },
   { v: "ata", label: "Atas de Registro" },
-  { v: "vigente", label: "Aditivos Vigentes" },
+  { v: "vigente", label: "Gestão Anterior - Aditivos" },
   { v: "anterior", label: "Gestão Anterior" },
   { v: "all", label: "Todas" },
 ];
