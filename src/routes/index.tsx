@@ -46,15 +46,11 @@ function VisaoGeral() {
   const contracts = useMemo(() => applyFilters(data.contracts, filters), [data, filters]);
 
   const totalValor = contracts.reduce((s, c) => s + c.valorContrato, 0);
-  const totalAditivado = contracts.reduce((s, c) => s + c.valorAditivado, 0);
   const mrr = contracts.reduce((s, c) => s + c.mrrSig, 0);
   const ticketMedio = contracts.length ? totalValor / contracts.length : 0;
   const vencendo90 = contracts.filter(
     (c) => c.diasParaVencer >= 0 && c.diasParaVencer <= 90,
   ).length;
-  const aditivoMedio = contracts.length
-    ? contracts.reduce((s, c) => s + c.percentualAditivado, 0) / contracts.length
-    : 0;
   const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
   const valorPorImovel = totalImoveis > 0 ? totalValor / totalImoveis : 0;
   const totalAreaKm2 = contracts.reduce((s, c) => s + c.areaKm2, 0);
