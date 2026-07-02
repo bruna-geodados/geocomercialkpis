@@ -16,7 +16,7 @@ export type ServiceLine =
   | "Taxa de Lixo";
 
 export interface Contract {
-  gestao: "nova" | "anterior" | "ata" | "vigente";
+  gestao: "nova" | "anterior" | "ata" | "vigente" | "aditivo-atual";
   numero: number;
   municipio: string;
   uf: string;
