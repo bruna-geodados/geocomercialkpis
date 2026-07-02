@@ -5,11 +5,11 @@ interface FiltersState {
   uf: string | "all";
   ano: number | "all";
   busca: string;
-  gestao: "nova" | "anterior" | "ata" | "vigente" | "all";
+  gestao: "nova" | "anterior" | "ata" | "vigente" | "aditivo-atual" | "all";
   setUf: (v: string | "all") => void;
   setAno: (v: number | "all") => void;
   setBusca: (v: string) => void;
-  setGestao: (v: "nova" | "anterior" | "ata" | "vigente" | "all") => void;
+  setGestao: (v: "nova" | "anterior" | "ata" | "vigente" | "aditivo-atual" | "all") => void;
   reset: () => void;
 }
 
