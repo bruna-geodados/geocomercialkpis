@@ -702,12 +702,133 @@ export function parseSheet(
         ? buildAta
         : gestao === "vigente"
           ? buildAditivosVigentes
-          : buildGestaoAnterior;
+          : gestao === "aditivo-atual"
+            ? buildAditivoAtual
+            : buildGestaoAnterior;
   const header = values[1] ?? [];
   return values
     .slice(2)
     .map((r) => builder(r, header))
     .filter((c): c is Contract => c !== null);
+}
+
+// ============================================================
+// Gestão Atual - Aditivos (nova aba, 25 cols)
+// 0 Nº | 1 Município | 2 População | 3 Contrato | 4 Data contrato
+// 5 Vigência inicial | 6 Projeção | 7 Valor do contrato
+// 8/9 1º TA (data/valor) | 10/11 2º TA | 12/13 3º TA
+// 14 Vencimento atualizado | 15 Prazo máximo aditivos | 16 Valor aditivado
+// 17 Assinado Geodados | 18 Assinado Prefeitura
+// 19 % Aditivado | 20 Valor máx aditivos (25%)
+// 21 Aero drone (km²) | 22 360º (R$) | 23 SIG Web Licença (R$)
+// 24 SIG Web/Mensal (R$)
+// ============================================================
+function buildAditivoAtual(row: string[], header: string[]): Contract | null {
+  if (!row || !row[1]) return null;
+  const nRaw = String(row[0] ?? "").trim();
+  if (!nRaw || !/^\d+/.test(nRaw)) return null;
+  const { municipio, uf } = splitMunicipio(row[1]);
+  if (!municipio) return null;
+
+  const valorContrato = num(row, col(header, "Valor do contrato", 7));
+  const valorAditivado = num(row, col(header, "Valor aditivado", 16));
+  const aeroDrone = num(row, col(header, "Aero drone", 21));
+  const m360 = num(row, col(header, "360º", 22));
+  const sigWebLic = num(row, col(header, "SIG Web Licença", 23));
+  const sigWebMensal = num(row, col(header, "SIG Web/Mensal", 24));
+  const totalVig = aeroDrone + m360 + sigWebLic + sigWebMensal;
+  if (totalVig <= 0 && valorAditivado <= 0 && valorContrato <= 0) return null;
+
+  const populacao = num(row, 2);
+  const dataContrato = parseSheetDate(row[4]);
+  const vigenciaInicial = parseSheetDate(row[5]);
+  const vencimento = parseSheetDate(
+    row[col(header, "Vencimento do contrato atualizado", 14)],
+    "BR",
+  );
+  const prazoMaxAditivos = parseSheetDate(
+    row[col(header, "Prazo Máximo dos aditivos", 15)],
+    "BR",
+  );
+  const percAdit = num(row, col(header, "% Aditivado", 19));
+
+  const tas = countAditivosPairs(
+    row,
+    [
+      [col(header, "1º Termo Aditivo", 8), 9],
+      [col(header, "2º Termo Aditivo", 10), 11],
+      [col(header, "3º Termo Aditivo", 12), 13],
+    ],
+    "BR",
+  );
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diasParaVencer = vencimento
+    ? Math.round((vencimento.getTime() - today.getTime()) / 86400000)
+    : 99999;
+  let statusVencimento: Contract["statusVencimento"] = "saudavel";
+  if (diasParaVencer < 0) statusVencimento = "vencido";
+  else if (diasParaVencer <= 30) statusVencimento = "criticos";
+  else if (diasParaVencer <= 90) statusVencimento = "atencao";
+
+  const receitaPorLinha: Record<ServiceLine, number> = {
+    "Aerolevantamento": aeroDrone,
+    "Mapeamento 360º": m360,
+    "Atualização Permanente": 0,
+    "Cadastro Multifinalitário": 0,
+    "PVG / Tributário": 0,
+    "Endereçamento Postal": 0,
+    "SIG - Implantação": 0,
+    "SIG - Licenças": sigWebLic,
+    "SIG - Mensal (MRR)": sigWebMensal,
+    "Desenvolvimento & Custom": 0,
+    "Taxa de Lixo": 0,
+  };
+
+  return {
+    gestao: "aditivo-atual",
+    numero: Number(nRaw.match(/^\d+/)?.[0] ?? 0),
+    municipio,
+    uf,
+    populacao,
+    contrato: String(row[3] ?? "").trim(),
+    dataContrato,
+    vigenciaInicial,
+    vencimento,
+    prazoMaxAditivos,
+    prazoMax60meses: null,
+    valorAta: 0,
+    valorContrato,
+    valorAditivosMax: num(row, col(header, "Valor máximo aditivos (25%)", 20)),
+    valorAditivado,
+    percentualAditivado: percAdit > 1 ? percAdit / 100 : percAdit,
+    areaKm2: 0,
+    unidades: 0,
+    receitaPorLinha,
+    aero: { drone: aeroDrone, tripulado: 0, valorKm2: 0, satelite: 0 },
+    aditivoVigente: {
+      aeroDrone,
+      m360,
+      sigWebLicenca: sigWebLic,
+      sigWebMensal,
+    },
+    countAditivos: tas.count,
+    datasAditivos: tas.datas,
+    ticketPorHabitante: populacao > 0 ? valorContrato / populacao : 0,
+    ticketPorImovel: 0,
+    diasParaVencer,
+    statusVencimento,
+    mrrSig: sigWebMensal,
+    mrrSigWeb: sigWebMensal,
+    contratosSig: sigWebLic > 0 ? 1 : 0,
+    sigBreakdown: SIG_MODULES.map((modulo) => ({
+      modulo,
+      implantacao: 0,
+      licenca: modulo === "Web" ? sigWebLic : 0,
+      mensal: modulo === "Web" ? sigWebMensal : 0,
+    })),
+  };
 }
 
 // --- formatting helpers ---
