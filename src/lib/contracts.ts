@@ -588,7 +588,7 @@ function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
 
 export function parseSheet(
   values: string[][],
-  gestao: "nova" | "anterior" | "ata" | "vigente",
+  gestao: "nova" | "anterior" | "ata" | "vigente" | "aditivo-atual",
 ): Contract[] {
   // ============================================================
   // Inline: Aditivos Vigentes (tab "Gestão anterior - Aditivos vigentes")
