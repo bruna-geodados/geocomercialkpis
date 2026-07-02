@@ -15,6 +15,7 @@ import { Route as ReceitaRouteImport } from './routes/receita'
 import { Route as MunicipiosRouteImport } from './routes/municipios'
 import { Route as AtasRouteImport } from './routes/atas'
 import { Route as AeroRouteImport } from './routes/aero'
+import { Route as AditivosAtualRouteImport } from './routes/aditivos-atual'
 import { Route as IndexRouteImport } from './routes/index'
 
 const VigenciasRoute = VigenciasRouteImport.update({
@@ -47,6 +48,11 @@ const AeroRoute = AeroRouteImport.update({
   path: '/aero',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AditivosAtualRoute = AditivosAtualRouteImport.update({
+  id: '/aditivos-atual',
+  path: '/aditivos-atual',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -55,6 +61,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aditivos-atual': typeof AditivosAtualRoute
   '/aero': typeof AeroRoute
   '/atas': typeof AtasRoute
   '/municipios': typeof MunicipiosRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aditivos-atual': typeof AditivosAtualRoute
   '/aero': typeof AeroRoute
   '/atas': typeof AtasRoute
   '/municipios': typeof MunicipiosRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/aditivos-atual': typeof AditivosAtualRoute
   '/aero': typeof AeroRoute
   '/atas': typeof AtasRoute
   '/municipios': typeof MunicipiosRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/aditivos-atual'
     | '/aero'
     | '/atas'
     | '/municipios'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/aditivos-atual'
     | '/aero'
     | '/atas'
     | '/municipios'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/aditivos-atual'
     | '/aero'
     | '/atas'
     | '/municipios'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AditivosAtualRoute: typeof AditivosAtualRoute
   AeroRoute: typeof AeroRoute
   AtasRoute: typeof AtasRoute
   MunicipiosRoute: typeof MunicipiosRoute
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AeroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/aditivos-atual': {
+      id: '/aditivos-atual'
+      path: '/aditivos-atual'
+      fullPath: '/aditivos-atual'
+      preLoaderRoute: typeof AditivosAtualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AditivosAtualRoute: AditivosAtualRoute,
   AeroRoute: AeroRoute,
   AtasRoute: AtasRoute,
   MunicipiosRoute: MunicipiosRoute,
