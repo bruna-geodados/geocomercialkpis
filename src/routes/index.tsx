@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import {
-  Briefcase, DollarSign, TrendingUp, AlertTriangle, Home, Percent, Sparkles, FileStack, CalendarClock,
+  Briefcase, DollarSign, TrendingUp, AlertTriangle, Home, Ruler, Sparkles, FileStack, CalendarClock,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -57,6 +57,8 @@ function VisaoGeral() {
     : 0;
   const totalImoveis = contracts.reduce((s, c) => s + c.unidades, 0);
   const valorPorImovel = totalImoveis > 0 ? totalValor / totalImoveis : 0;
+  const totalAreaKm2 = contracts.reduce((s, c) => s + c.areaKm2, 0);
+  const valorPorKm2 = totalAreaKm2 > 0 ? totalValor / totalAreaKm2 : 0;
 
   // Aditivos vigentes — fonte primária: aba "Gestão anterior - Aditivos vigentes"
   // Aplica filtros (UF/busca/ano) sem restringir por gestão, para o destaque
@@ -131,7 +133,7 @@ function VisaoGeral() {
         <KpiCard label="Ticket Médio" value={fmtBRLShort(ticketMedio)} icon={<TrendingUp className="h-4 w-4" />} />
         <KpiCard label="Imóveis" value={fmtInt(totalImoveis)} hint={`R$/imóvel: ${fmtBRL(valorPorImovel)}`} icon={<Home className="h-4 w-4" />} />
         <KpiCard label="MRR SIG" value={fmtBRLShort(mrr)} hint="Licenças mensais" tone="success" />
-        <KpiCard label="% Aditivado Médio" value={fmtPct(aditivoMedio)} icon={<Percent className="h-4 w-4" />} hint={`Total: ${fmtBRLShort(totalAditivado)}`} />
+        <KpiCard label="Área (km²)" value={fmtInt(Math.round(totalAreaKm2))} hint={`R$/km²: ${valorPorKm2 > 0 ? fmtBRL(valorPorKm2) : "—"}`} icon={<Ruler className="h-4 w-4" />} />
         <KpiCard label="Vencendo em 90d" value={fmtInt(vencendo90)} icon={<AlertTriangle className="h-4 w-4" />} tone={vencendo90 > 0 ? "warning" : "default"} />
       </div>
 
