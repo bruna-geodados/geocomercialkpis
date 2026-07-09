@@ -629,6 +629,8 @@ function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
     mrrSigWeb: num(row, ANT_SIG_MENSAL[0]),
     contratosSig,
     sigBreakdown,
+    locacao: EMPTY_LOCACAO,
+    parametrizacoes: EMPTY_PARAM,
   };
 }
 
@@ -738,6 +740,8 @@ export function parseSheet(
         licenca: modulo === "Web" ? sigWebLic : 0,
         mensal: modulo === "Web" ? sigWebMensal : 0,
       })),
+      locacao: EMPTY_LOCACAO,
+      parametrizacoes: EMPTY_PARAM,
     };
   }
 
@@ -874,6 +878,8 @@ function buildAditivoAtual(row: string[], header: string[]): Contract | null {
       licenca: modulo === "Web" ? sigWebLic : 0,
       mensal: modulo === "Web" ? sigWebMensal : 0,
     })),
+    locacao: EMPTY_LOCACAO,
+    parametrizacoes: EMPTY_PARAM,
   };
 }
 
