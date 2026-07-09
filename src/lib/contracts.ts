@@ -68,7 +68,28 @@ export interface Contract {
     licenca: number;
     mensal: number;
   }[];
+  // Locação de equipamentos (Gestão Atual — cols 72..77; Atas — col 71)
+  locacao: {
+    smartImpl: number;
+    smartMensal: number;
+    imprImpl: number;
+    imprMensal: number;
+    comboImpl: number;
+    comboMensal: number;
+  };
+  // Parametrizações e integrações / Adequação técnica evolutiva
+  parametrizacoes: {
+    parametrizacoes: number;
+    adequacaoTecnica: number;
+  };
 }
+
+const EMPTY_LOCACAO = {
+  smartImpl: 0, smartMensal: 0,
+  imprImpl: 0, imprMensal: 0,
+  comboImpl: 0, comboMensal: 0,
+};
+const EMPTY_PARAM = { parametrizacoes: 0, adequacaoTecnica: 0 };
 
 const BR_UF = new Set([
   "AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA",
