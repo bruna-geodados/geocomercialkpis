@@ -68,7 +68,28 @@ export interface Contract {
     licenca: number;
     mensal: number;
   }[];
+  // Locação de equipamentos (Gestão Atual — cols 72..77; Atas — col 71)
+  locacao: {
+    smartImpl: number;
+    smartMensal: number;
+    imprImpl: number;
+    imprMensal: number;
+    comboImpl: number;
+    comboMensal: number;
+  };
+  // Parametrizações e integrações / Adequação técnica evolutiva
+  parametrizacoes: {
+    parametrizacoes: number;
+    adequacaoTecnica: number;
+  };
 }
+
+const EMPTY_LOCACAO = {
+  smartImpl: 0, smartMensal: 0,
+  imprImpl: 0, imprMensal: 0,
+  comboImpl: 0, comboMensal: 0,
+};
+const EMPTY_PARAM = { parametrizacoes: 0, adequacaoTecnica: 0 };
 
 const BR_UF = new Set([
   "AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA",
@@ -225,8 +246,10 @@ const NOVA = {
   sigImpl: [46, 47, 48, 49, 50, 51, 52, 53],
   sigLic: [54, 55, 56, 57, 58, 59, 60, 61],
   sigMensal: [62, 63, 64, 65, 66, 67, 68, 69],
-  dev: [70, 71, 72, 73, 74],
-  taxaLixo: 75,
+  dev: [70, 71],
+  locacao: [72, 73, 74, 75, 76, 77],
+  parametrizacoes: [78, 79],
+  taxaLixo: 80,
 } as const;
 
 // ============================================================
@@ -253,7 +276,9 @@ const ATA = {
   sigImpl: [45, 46, 47, 48, 49, 50, 51, 52],
   sigLic: [53, 54, 55, 56, 57, 58, 59, 60],
   sigMensal: [61, 62, 63, 64, 65, 66, 67, 68],
-  dev: [69, 70, 71, 72, 73],
+  dev: [69, 70],
+  locacao: [71],
+  parametrizacoes: [72, 73],
   taxaLixo: 74,
 } as const;
 
@@ -356,6 +381,18 @@ function buildNovaGestao(row: string[], header: string[]): Contract | null {
     mrrSigWeb: num(row, NOVA.sigMensal[0]),
     contratosSig,
     sigBreakdown,
+    locacao: {
+      smartImpl: num(row, NOVA.locacao[0]),
+      smartMensal: num(row, NOVA.locacao[1]),
+      imprImpl: num(row, NOVA.locacao[2]),
+      imprMensal: num(row, NOVA.locacao[3]),
+      comboImpl: num(row, NOVA.locacao[4]),
+      comboMensal: num(row, NOVA.locacao[5]),
+    },
+    parametrizacoes: {
+      parametrizacoes: num(row, NOVA.parametrizacoes[0]),
+      adequacaoTecnica: num(row, NOVA.parametrizacoes[1]),
+    },
   };
 }
 
@@ -462,6 +499,15 @@ function buildAta(row: string[], header: string[]): Contract | null {
     mrrSigWeb: num(row, ATA.sigMensal[0]),
     contratosSig,
     sigBreakdown,
+    locacao: {
+      smartImpl: num(row, ATA.locacao[0]),
+      smartMensal: 0,
+      imprImpl: 0, imprMensal: 0, comboImpl: 0, comboMensal: 0,
+    },
+    parametrizacoes: {
+      parametrizacoes: num(row, ATA.parametrizacoes[0]),
+      adequacaoTecnica: num(row, ATA.parametrizacoes[1]),
+    },
   };
 }
 
@@ -583,6 +629,8 @@ function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
     mrrSigWeb: num(row, ANT_SIG_MENSAL[0]),
     contratosSig,
     sigBreakdown,
+    locacao: EMPTY_LOCACAO,
+    parametrizacoes: EMPTY_PARAM,
   };
 }
 
@@ -692,6 +740,8 @@ export function parseSheet(
         licenca: modulo === "Web" ? sigWebLic : 0,
         mensal: modulo === "Web" ? sigWebMensal : 0,
       })),
+      locacao: EMPTY_LOCACAO,
+      parametrizacoes: EMPTY_PARAM,
     };
   }
 
@@ -828,6 +878,8 @@ function buildAditivoAtual(row: string[], header: string[]): Contract | null {
       licenca: modulo === "Web" ? sigWebLic : 0,
       mensal: modulo === "Web" ? sigWebMensal : 0,
     })),
+    locacao: EMPTY_LOCACAO,
+    parametrizacoes: EMPTY_PARAM,
   };
 }
 
