@@ -185,6 +185,10 @@ function SigPage() {
         </div>
       </SectionCard>
 
+      <ModulosDetalhe contracts={contracts} />
+      <LocacaoSection contracts={contracts} />
+      <ParametrizacoesSection contracts={contracts} />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SectionCard title="Adoção por Módulo" description="Quantos municípios usam cada módulo">
           <table className="w-full text-sm">
