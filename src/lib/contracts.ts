@@ -381,6 +381,18 @@ function buildNovaGestao(row: string[], header: string[]): Contract | null {
     mrrSigWeb: num(row, NOVA.sigMensal[0]),
     contratosSig,
     sigBreakdown,
+    locacao: {
+      smartImpl: num(row, NOVA.locacao[0]),
+      smartMensal: num(row, NOVA.locacao[1]),
+      imprImpl: num(row, NOVA.locacao[2]),
+      imprMensal: num(row, NOVA.locacao[3]),
+      comboImpl: num(row, NOVA.locacao[4]),
+      comboMensal: num(row, NOVA.locacao[5]),
+    },
+    parametrizacoes: {
+      parametrizacoes: num(row, NOVA.parametrizacoes[0]),
+      adequacaoTecnica: num(row, NOVA.parametrizacoes[1]),
+    },
   };
 }
 
@@ -487,6 +499,15 @@ function buildAta(row: string[], header: string[]): Contract | null {
     mrrSigWeb: num(row, ATA.sigMensal[0]),
     contratosSig,
     sigBreakdown,
+    locacao: {
+      smartImpl: num(row, ATA.locacao[0]),
+      smartMensal: 0,
+      imprImpl: 0, imprMensal: 0, comboImpl: 0, comboMensal: 0,
+    },
+    parametrizacoes: {
+      parametrizacoes: num(row, ATA.parametrizacoes[0]),
+      adequacaoTecnica: num(row, ATA.parametrizacoes[1]),
+    },
   };
 }
 
