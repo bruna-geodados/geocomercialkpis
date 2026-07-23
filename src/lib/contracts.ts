@@ -609,7 +609,7 @@ function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
     prazoMax60meses: null,
     valorAditivado: 0,
     percentualAditivado: 0,
-    areaKm2: num(row, 10),
+    areaKm2: num(row, col(header, "Área (km²)", 27)),
     unidades,
     receitaPorLinha,
     aero: {
