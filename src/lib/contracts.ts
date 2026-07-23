@@ -512,30 +512,30 @@ function buildAta(row: string[], header: string[]): Contract | null {
 }
 
 // ============================================================
-// Gestão Anterior - Contratos aditivados (73 cols)
-// Tab simplificada: SEM colunas de TA — só valor do contrato + vencimento.
+// Gestão Anterior - Contratos aditivados
 // 0 Nº | 1 Município | 2 População | 3 Contrato | 4 Data | 5 Vigência inicial
 // 6 Projeção | 7 Valor da Ata | 8 Valor do contrato
-// 9 Vencimento atualizado | 10 Área km² | 11 Unidades
-// 12-15 Aero (drone, tripulado, km², satélite)
-// 16 360º | 17 Atualização permanente
-// 18-36 Cadastro Multifinalitário (19 cols: Mapa Urbano, Uso/Ocup, Atual imob,
-//   Digitaliz, Mapa Rural, Atual rural, Regul, Coleta, Posturas, Vias, Postes,
-//   Arboriz, Águas, APP, Saúde, Educ, Assist, Mobiliário, Cemitério)
-// 37-40 PVG | 41-42 Endereçamento
-// 43-50 SIG Impl | 51-58 SIG Lic | 59-66 SIG Mensal
-// 67-71 Desenvolvimento | 72 Taxa de Lixo
-const ANT_AERO = [12, 13, 14, 15];
+// 9-24 TA 1..8 (pares data/valor)
+// 25 Vencimento atualizado | 26 Prazo máximo 60 meses
+// 27 Área km² | 28 Quantidade de imóveis
+// 29-32 Aero (drone, tripulado, km², satélite)
+// 33 360º | 34 Atualização permanente
+// 35-53 Cadastro Multifinalitário (19)
+// 54-57 PVG | 58-59 Endereçamento
+// 60-67 SIG Impl | 68-75 SIG Lic | 76-83 SIG Mensal
+// 84-85 Desenvolvimento (Web/Mobile) | 86 Locação smartphone
+// 87 Parametrizações | 88 Adequação técnica | 89 Taxa de Lixo
+const ANT_AERO = [29, 30, 31, 32];
 const ANT_CADASTRO = [
-  18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+  35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53,
 ];
-const ANT_PVG = [37, 38, 39, 40];
-const ANT_ENDER = [41, 42];
-const ANT_SIG_IMPL = [43, 44, 45, 46, 47, 48, 49, 50];
-const ANT_SIG_LIC = [51, 52, 53, 54, 55, 56, 57, 58];
-const ANT_SIG_MENSAL = [59, 60, 61, 62, 63, 64, 65, 66];
-const ANT_DEV = [67, 68, 69, 70, 71];
-const ANT_TAXA_LIXO = 72;
+const ANT_PVG = [54, 55, 56, 57];
+const ANT_ENDER = [58, 59];
+const ANT_SIG_IMPL = [60, 61, 62, 63, 64, 65, 66, 67];
+const ANT_SIG_LIC = [68, 69, 70, 71, 72, 73, 74, 75];
+const ANT_SIG_MENSAL = [76, 77, 78, 79, 80, 81, 82, 83];
+const ANT_DEV = [84, 85];
+const ANT_TAXA_LIXO = 89;
 
 function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
   if (!row || !row[1]) return null;
@@ -548,7 +548,7 @@ function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
   const dataContrato = parseSheetDate(row[4]);
   const vigenciaInicial = parseSheetDate(row[5]);
   const vencimento = parseSheetDate(
-    row[col(header, "Vencimento do contrato atualizado", 9)],
+    row[col(header, "Vencimento do contrato atualizado", 25)],
     "BR",
   );
 
@@ -587,7 +587,7 @@ function buildGestaoAnterior(row: string[], header: string[]): Contract | null {
   else if (diasParaVencer <= 90) statusVencimento = "atencao";
 
   const nRaw = String(row[0] ?? "").trim();
-  const unidades = num(row, 11);
+  const unidades = num(row, col(header, "Quantidade de imóveis", 28));
 
   // ANT tab no longer has TA columns
   const tas = { count: 0, datas: [] as Date[] };
