@@ -18,13 +18,13 @@ export async function loadContracts(): Promise<{
   if (!GOOGLE_SHEETS_API_KEY)
     throw new Error("GOOGLE_SHEETS_API_KEY not configured");
 
-  const params = new URLSearchParams();
-  params.append("ranges", RANGE_NOVA);
-  params.append("ranges", RANGE_ADIT_ATUAL);
-  params.append("ranges", RANGE_ATAS);
-  params.append("ranges", RANGE_VIG);
-  params.append("ranges", RANGE_ANT);
-  const url = `${GATEWAY}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${params.toString()}`;
+  // Google Sheets rejects '+' as a space substitute in the range param, so
+  // encode each range explicitly with %20 rather than URLSearchParams (which
+  // uses form-encoding and turns spaces into '+').
+  const query = [RANGE_NOVA, RANGE_ADIT_ATUAL, RANGE_ATAS, RANGE_VIG, RANGE_ANT]
+    .map((r) => `ranges=${encodeURIComponent(r)}`)
+    .join("&");
+  const url = `${GATEWAY}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${query}`;
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${LOVABLE_API_KEY}`,
