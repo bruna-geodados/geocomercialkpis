@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "geocomercial-kpis-mcp",
+      "version": "0.1.0",
+      "title": "GeoComercial KPIs MCP"
+    },
+    "tools": [
+      {
+        "name": "list_contracts",
+        "title": "Listar contratos",
+        "description": "Lista contratos municipais do dashboard, com filtros opcionais por gestão, UF ou busca por município. Retorna campos-chave (valor, vencimento, MRR SIG, aditivos).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "gestao": {
+              "type": "string",
+              "enum": [
+                "nova",
+                "anterior",
+                "ata",
+                "vigente",
+                "aditivo-atual"
+              ],
+              "description": "Filtro por tipo de gestão."
+            },
+            "uf": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "Sigla do estado (ex: SP)."
+            },
+            "search": {
+              "type": "string",
+              "description": "Substring case-insensitive no nome do município."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 100
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_municipio",
+        "title": "Detalhe do município",
+        "description": "Retorna todos os contratos (nova/anterior/aditivo/ata) associados a um município, com breakdown SIG, aero, locação e receita por linha.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "municipio": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Nome do município (case-insensitive)."
+            }
+          },
+          "required": [
+            "municipio"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "revenue_summary",
+        "title": "Resumo de receita por linha de serviço",
+        "description": "Soma a receita por linha de serviço (Aerolevantamento, SIG, Cadastro, etc.) em todos os contratos, ou filtrando por gestão. Atas ficam de fora dos totais agregados.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "gestao": {
+              "type": "string",
+              "enum": [
+                "nova",
+                "anterior",
+                "vigente",
+                "aditivo-atual",
+                "todas"
+              ],
+              "default": "todas"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "expiring_contracts",
+        "title": "Contratos a vencer",
+        "description": "Lista contratos que vencem nos próximos N dias (padrão 180), ordenados do mais próximo ao mais distante. Inclui contratos já vencidos por padrão.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "diasHorizonte": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3650,
+              "default": 180
+            },
+            "incluirVencidos": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
