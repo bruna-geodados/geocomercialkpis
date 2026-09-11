@@ -33,9 +33,10 @@ isso a API Key não consegue ler os dados.
      **Restringir chave** e marque apenas **Google Sheets API** (evita que
      a chave sirva para outras APIs caso vaze).
 3. **Configurar a chave no projeto**
-   - Local (dev): copie `.dev.vars.example` para `.dev.vars` e cole a chave
-     em `GOOGLE_SHEETS_API_KEY`.
-   - Produção (Cloudflare Workers): `wrangler secret put GOOGLE_SHEETS_API_KEY`.
+   - Local (dev): copie `.env.example` para `.env` e cole a chave em
+     `GOOGLE_SHEETS_API_KEY`.
+   - Produção (Vercel): projeto → **Settings → Environment Variables** →
+     adicione `GOOGLE_SHEETS_API_KEY` com o mesmo valor.
 
 Como a planilha fica com link de visualização aberto, qualquer pessoa com a
 URL consegue ver os dados brutos diretamente no Google Sheets — isso é uma
@@ -45,25 +46,36 @@ autenticação por Service Account (compartilhando a planilha só com o
 e-mail da conta de serviço) sem mudar o resto do dashboard — avise que eu
 faço a troca.
 
-This project was built with [Lovable](https://lovable.dev).
+This project was originally scaffolded with [Lovable](https://lovable.dev) and
+is now deployed independently on Vercel.
 
-**Live app**: https://geocomercialkpis.lovable.app
+## Deploy (Vercel)
 
-## Build with Lovable
+The build is preconfigured for Vercel via Nitro's `vercel` preset
+(`vite.config.ts`) — no extra setup beyond connecting the repo:
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/87b131b2-079e-4f82-951e-7474a455d3cd).
+1. Import the repository on https://vercel.com/new.
+2. Framework preset: Vercel auto-detects the build output (Nitro emits a
+   Build Output API v3 bundle), no manual override needed.
+3. Add the `GOOGLE_SHEETS_API_KEY` environment variable (see above) in
+   **Settings → Environment Variables** before the first deploy.
+4. Deploy. Every push to the connected branch redeploys automatically.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+To build the same output locally (sanity check before pushing):
+
+```sh
+bun run build
+# inspect .vercel/output/ — Build Output API v3 structure
+```
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+You need Node.js/Bun. Copy `.env.example` to `.env` and fill in
+`GOOGLE_SHEETS_API_KEY` first (see "Conectar ao Google Sheets" above).
 
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
 ```

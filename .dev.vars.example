@@ -1,4 +1,0 @@
-# Copie este arquivo para ".dev.vars" (já ignorado pelo git) e preencha com
-# sua própria API Key do Google Cloud restrita à Google Sheets API.
-# Veja o passo a passo em README.md > "Conectar ao Google Sheets".
-GOOGLE_SHEETS_API_KEY=
