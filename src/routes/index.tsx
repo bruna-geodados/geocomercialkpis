@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
   ),
   errorComponent: ({ error }) => (
     <div className="p-6 text-destructive text-sm">
-      Erro ao carregar planilha: {error.message}
+      Erro ao carregar planilha: {error instanceof Error ? error.message : String(error)}
     </div>
   ),
 });

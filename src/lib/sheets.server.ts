@@ -6,14 +6,16 @@ const RANGE_ADIT_ATUAL = "Gestão atual - Aditivos!A:ZZ";
 const RANGE_ATAS = "Gestão atual -Atas de Registro de Preço!A:ZZ";
 const RANGE_VIG = "Gestão anterior - Aditivos vigentes!A:ZZ";
 const RANGE_ANT = "Gestão Anterior - Contratos aditivados!A:ZZ";
-const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
+// Direct connection to the Google Sheets API v4 (no Lovable connector in the
+// middle). Requires the spreadsheet to be shared as "Anyone with the link —
+// Viewer" and GOOGLE_SHEETS_API_KEY to be a Google Cloud API key restricted
+// to the Sheets API.
+const SHEETS_API = "https://sheets.googleapis.com/v4/spreadsheets";
 
 export async function loadContracts(): Promise<{
   contracts: Contract[];
   fetchedAt: string;
 }> {
-  const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
-  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
   const GOOGLE_SHEETS_API_KEY = process.env.GOOGLE_SHEETS_API_KEY;
   if (!GOOGLE_SHEETS_API_KEY)
     throw new Error("GOOGLE_SHEETS_API_KEY not configured");
@@ -24,16 +26,11 @@ export async function loadContracts(): Promise<{
   const query = [RANGE_NOVA, RANGE_ADIT_ATUAL, RANGE_ATAS, RANGE_VIG, RANGE_ANT]
     .map((r) => `ranges=${encodeURIComponent(r)}`)
     .join("&");
-  const url = `${GATEWAY}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${query}`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "X-Connection-Api-Key": GOOGLE_SHEETS_API_KEY,
-    },
-  });
+  const url = `${SHEETS_API}/${SPREADSHEET_ID}/values:batchGet?key=${GOOGLE_SHEETS_API_KEY}&${query}`;
+  const res = await fetch(url);
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Sheets gateway error [${res.status}]: ${body}`);
+    throw new Error(`Google Sheets API error [${res.status}]: ${body}`);
   }
   const data = (await res.json()) as {
     valueRanges?: { range: string; values?: string[][] }[];

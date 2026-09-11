@@ -9,52 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VigenciasRouteImport } from './routes/vigencias'
-import { Route as SigRouteImport } from './routes/sig'
-import { Route as ReceitaRouteImport } from './routes/receita'
-import { Route as MunicipiosRouteImport } from './routes/municipios'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as AtasRouteImport } from './routes/atas'
-import { Route as AeroRouteImport } from './routes/aero'
-import { Route as AditivosAtualRouteImport } from './routes/aditivos-atual'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AditivosAtualRouteImport } from './routes/aditivos-atual'
+import { Route as AeroRouteImport } from './routes/aero'
+import { Route as AtasRouteImport } from './routes/atas'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MunicipiosRouteImport } from './routes/municipios'
+import { Route as ReceitaRouteImport } from './routes/receita'
+import { Route as SigRouteImport } from './routes/sig'
+import { Route as VigenciasRouteImport } from './routes/vigencias'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
-const VigenciasRoute = VigenciasRouteImport.update({
-  id: '/vigencias',
-  path: '/vigencias',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SigRoute = SigRouteImport.update({
-  id: '/sig',
-  path: '/sig',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReceitaRoute = ReceitaRouteImport.update({
-  id: '/receita',
-  path: '/receita',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MunicipiosRoute = MunicipiosRouteImport.update({
-  id: '/municipios',
-  path: '/municipios',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AtasRoute = AtasRouteImport.update({
-  id: '/atas',
-  path: '/atas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AeroRoute = AeroRouteImport.update({
-  id: '/aero',
-  path: '/aero',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AditivosAtualRoute = AditivosAtualRouteImport.update({
@@ -62,21 +32,51 @@ const AditivosAtualRoute = AditivosAtualRouteImport.update({
   path: '/aditivos-atual',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AeroRoute = AeroRouteImport.update({
+  id: '/aero',
+  path: '/aero',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const AtasRoute = AtasRouteImport.update({
+  id: '/atas',
+  path: '/atas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MunicipiosRoute = MunicipiosRouteImport.update({
+  id: '/municipios',
+  path: '/municipios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReceitaRoute = ReceitaRouteImport.update({
+  id: '/receita',
+  path: '/receita',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SigRoute = SigRouteImport.update({
+  id: '/sig',
+  path: '/sig',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VigenciasRoute = VigenciasRouteImport.update({
+  id: '/vigencias',
+  path: '/vigencias',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93ListToolsRoute =
   Char91DotmcpChar93ListToolsRouteImport.update({
     id: '/.mcp/list-tools',
     path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
@@ -191,53 +191,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/vigencias': {
-      id: '/vigencias'
-      path: '/vigencias'
-      fullPath: '/vigencias'
-      preLoaderRoute: typeof VigenciasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sig': {
-      id: '/sig'
-      path: '/sig'
-      fullPath: '/sig'
-      preLoaderRoute: typeof SigRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/receita': {
-      id: '/receita'
-      path: '/receita'
-      fullPath: '/receita'
-      preLoaderRoute: typeof ReceitaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/municipios': {
-      id: '/municipios'
-      path: '/municipios'
-      fullPath: '/municipios'
-      preLoaderRoute: typeof MunicipiosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/atas': {
-      id: '/atas'
-      path: '/atas'
-      fullPath: '/atas'
-      preLoaderRoute: typeof AtasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/aero': {
-      id: '/aero'
-      path: '/aero'
-      fullPath: '/aero'
-      preLoaderRoute: typeof AeroRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/aditivos-atual': {
@@ -247,18 +205,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AditivosAtualRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/aero': {
+      id: '/aero'
+      path: '/aero'
+      fullPath: '/aero'
+      preLoaderRoute: typeof AeroRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+    '/atas': {
+      id: '/atas'
+      path: '/atas'
+      fullPath: '/atas'
+      preLoaderRoute: typeof AtasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/municipios': {
+      id: '/municipios'
+      path: '/municipios'
+      fullPath: '/municipios'
+      preLoaderRoute: typeof MunicipiosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/receita': {
+      id: '/receita'
+      path: '/receita'
+      fullPath: '/receita'
+      preLoaderRoute: typeof ReceitaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sig': {
+      id: '/sig'
+      path: '/sig'
+      fullPath: '/sig'
+      preLoaderRoute: typeof SigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vigencias': {
+      id: '/vigencias'
+      path: '/vigencias'
+      fullPath: '/vigencias'
+      preLoaderRoute: typeof VigenciasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -266,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/.mcp/list-tools'
       fullPath: '/.mcp/list-tools'
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/invoke-tool/$tool': {

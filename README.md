@@ -1,46 +1,81 @@
 # Sales Insights Hub
 
-om base nessa planilha eu preciso que vc contrua um dashboard dinamico com KPIS - integrado com o planilhas google, para análise do setor comercial da empresa, criação no Lovable.
+Dashboard comercial (KPIs de contratos municipais) conectado em tempo real à
+planilha do Google Sheets:
 
-Estrutura de Dados — as 12 colunas obrigatórias na planilha com tipos e observações, mais os 5 campos calculados que o frontend vai gerar automaticamente.
+https://docs.google.com/spreadsheets/d/1GLGSTS7a8bnLiwUjq-u3EN09Fi_is1KzCDdbcZTOy0A
 
-Páginas — detalhamento das 5 páginas com os KPIs e gráficos de cada uma.
+Os dados são buscados diretamente da Google Sheets API v4 (sem intermediário)
+a cada carregamento de página e a cada 15s em segundo plano
+(`src/lib/queries.ts`), então qualquer edição na planilha aparece no
+dashboard automaticamente, sem nenhum passo manual de "republicar" ou
+"exportar".
 
-Arquitetura Técnica — stack React + TypeScript, como publicar a planilha como CSV e o fluxo fetch → parse → enrich → render.
+## Conectar ao Google Sheets
 
-Prompt Lovable — o prompt completo e detalhado, pronto para colar. Ele já instrui o Lovable a criar: hook de dados, store de filtros globais, todas as 5 páginas, mapa do Brasil, exportação CSV e formatação BR.
+O dashboard lê a planilha via uma **API Key do Google Cloud restrita à
+Google Sheets API**. Isso exige que a planilha esteja com o link de
+visualização aberto ("Qualquer pessoa com o link pode visualizar") — sem
+isso a API Key não consegue ler os dados.
 
-Antes de colar no Lovable, faça isso:
+1. **Compartilhar a planilha para leitura pública**
+   - Na planilha → botão **Compartilhar** (canto superior direito) →
+     em "Acesso geral" selecione **Qualquer pessoa com o link** → papel
+     **Leitor**.
+2. **Criar a API Key no Google Cloud**
+   - Acesse https://console.cloud.google.com/ → crie um projeto (ou use um
+     existente).
+   - Vá em **APIs e serviços → Biblioteca**, procure **Google Sheets API**
+     e clique em **Ativar**.
+   - Vá em **APIs e serviços → Credenciais → Criar credenciais → Chave de
+     API**.
+   - Clique na chave criada → em **Restrições de API**, selecione
+     **Restringir chave** e marque apenas **Google Sheets API** (evita que
+     a chave sirva para outras APIs caso vaze).
+3. **Configurar a chave no projeto**
+   - Local (dev): copie `.env.example` para `.env` e cole a chave em
+     `GOOGLE_SHEETS_API_KEY`.
+   - Produção (Vercel): projeto → **Settings → Environment Variables** →
+     adicione `GOOGLE_SHEETS_API_KEY` com o mesmo valor.
 
-No Google Sheets → Arquivo → Compartilhar → Publicar na web → selecione a aba de dados → formato CSV → copie a URL
+Como a planilha fica com link de visualização aberto, qualquer pessoa com a
+URL consegue ver os dados brutos diretamente no Google Sheets — isso é uma
+troca consciente pela simplicidade de não precisar de OAuth/Service
+Account. Se depois quiser manter a planilha privada, dá para migrar para
+autenticação por Service Account (compartilhando a planilha só com o
+e-mail da conta de serviço) sem mudar o resto do dashboard — avise que eu
+faço a troca.
 
-No prompt, substitua [URL_DA_PLANILHA] por essa URL
+This project was originally scaffolded with [Lovable](https://lovable.dev) and
+is now deployed independently on Vercel.
 
-Se me compartilhar a planilha com acesso público, consigo revisar se as colunas reais batem com a estrutura e ajustar o prompt antes de você levar pro Lovable.
+## Deploy (Vercel)
 
-A planilha é a seguinte: 
+The build is preconfigured for Vercel via Nitro's `vercel` preset
+(`vite.config.ts`) — no extra setup beyond connecting the repo:
 
-https://docs.google.com/spreadsheets/d/1GLGSTS7a8bnLiwUjq-u3EN09Fi_is1KzCDdbcZTOy0A/edit?gid=1791401717#gid=1791401717
+1. Import the repository on https://vercel.com/new.
+2. Framework preset: Vercel auto-detects the build output (Nitro emits a
+   Build Output API v3 bundle), no manual override needed.
+3. Add the `GOOGLE_SHEETS_API_KEY` environment variable (see above) in
+   **Settings → Environment Variables** before the first deploy.
+4. Deploy. Every push to the connected branch redeploys automatically.
 
-This project was built with [Lovable](https://lovable.dev).
+To build the same output locally (sanity check before pushing):
 
-**Live app**: https://geocomercialkpis.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/87b131b2-079e-4f82-951e-7474a455d3cd).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+```sh
+bun run build
+# inspect .vercel/output/ — Build Output API v3 structure
+```
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+You need Node.js/Bun. Copy `.env.example` to `.env` and fill in
+`GOOGLE_SHEETS_API_KEY` first (see "Conectar ao Google Sheets" above).
 
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
 ```
